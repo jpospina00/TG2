@@ -1,54 +1,27 @@
+from datetime import datetime
 from sqlmodel import Field, SQLModel
 
 
 class UserBase(SQLModel):
+    auth0_id: str = Field(unique=True, index=True)
     name: str
     email: str
-    password: str
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "id": 123456,
-                "name": "Super Man",
-                "email": "fake@email.com",
-                "password": "password",
-            }
-        }
 
 
 class User(UserBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class UserCreate(UserBase):
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "name": "Super Man",
-                "email": "fake@email.com",
-                "password": "password",
-            }
-        }
+    pass
 
 
 class UserRead(UserBase):
     id: int
-    name: str
-    email: str
-    password: str
+    created_at: datetime
 
 
-class UserUpdate(UserBase):
-    name: str | None
-    email: str | None
-    password: str | None
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "name": "Super Man",
-                "email": "fake@email.com",
-                "password": "password",
-            }
-        }
+class UserUpdate(SQLModel):
+    name: str | None = None
+    email: str | None = None

@@ -5,3 +5,4 @@ from model.progress import Progress
 from model.conversation import Conversation
 from model.message import Message
 from model.feedback import Feedback
+from model.diagnostic import Diagnostic

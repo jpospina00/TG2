@@ -1,3 +1,33 @@
-__pycache__/
+# Entornos virtuales
+venv/
 .venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Variables de entorno
+.env
+
+# Base de datos SQLite
+db/tesis.db
+
+# ChromaDB — generado automáticamente
+chromadb_data/chroma_db/
+
+# Caché de modelos de embeddings
+.cache/
+
+# Mypy
 .mypy_cache/
+
+# PyCharm / VS Code
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage

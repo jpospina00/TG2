@@ -1,0 +1,13 @@
+# Docker
+.env
+*.env
+
+# Python
+Back/venv/
+Back/__pycache__/
+Back/db/
+Back/chromadb_data/chroma_db/
+
+# Node
+Front/soft-skills-front/node_modules/
+Front/soft-skills-front/build/

@@ -1,2 +1,0 @@
-runtime: python311
-entrypoint: uvicorn main:app --workers 4

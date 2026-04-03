@@ -1,13 +1,17 @@
 from sqlmodel import Session, SQLModel, create_engine
 from config import settings
 
-# Seleccionar argumentos según el motor
 is_sqlite = settings.active_database_uri.startswith("sqlite")
-connect_args = {"check_same_thread": False} if is_sqlite else {}
+
+connect_args = {}
+if is_sqlite:
+    connect_args = {"check_same_thread": False}
+elif "neon.tech" in settings.active_database_uri:
+    connect_args = {"sslmode": "require"}
 
 engine = create_engine(
     settings.active_database_uri,
-    echo=True,
+    echo=False,
     connect_args=connect_args
 )
 

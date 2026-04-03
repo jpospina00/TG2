@@ -18,7 +18,7 @@ NETWORKING_JSON = BASE_DIR / "networking.json"
 # ── ChromaDB client ───────────────────────────────────────────────────────────
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 
-# Usar el embedding function por defecto de ChromaDB (sentence-transformers)
+# embedding function por defecto de ChromaDB (sentence-transformers)
 embedding_fn = embedding_functions.DefaultEmbeddingFunction()
 
 # ── Colección única ───────────────────────────────────────────────────────────
@@ -38,7 +38,6 @@ def load_to_chroma(documents: list[dict]):
     metadatas = []
 
     for i, doc in enumerate(documents):
-        # Soportar tanto formato inglés como español
         module = doc.get("module") or doc.get("modulo")
         type_ = doc.get("type") or doc.get("tipo")
         level = doc.get("level") or doc.get("nivel")

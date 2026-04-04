@@ -16,6 +16,7 @@ import Guide from "./components/guide/Guide";
 import NotFound from "./components/shared/NotFound";
 import Diagnostic from "./components/diagnostic/Diagnostic";
 import LevelUp from "./components/shared/LevelUp";
+import Onboarding from "./components/onboarding/Onboarding";
 
 const LoadingScreen = () => (
   <div style={{
@@ -64,6 +65,7 @@ function App() {
         <Route path="/module/:moduleId/guide" element={<PrivateRoute><Guide /></PrivateRoute>} />
         <Route path="/module/:moduleId/diagnostic" element={<PrivateRoute><Diagnostic /></PrivateRoute>} />
         <Route path="/levelup" element={<PrivateRoute><LevelUp /></PrivateRoute>} />
+        <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

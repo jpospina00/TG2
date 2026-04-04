@@ -10,6 +10,7 @@ from database import engine
 from model.diagnostic import Diagnostic
 from model.challenge import Challenge
 from model.progress import Progress
+from model.student_profile import StudentProfile
 from service import ai as ai_service
 
 router = APIRouter(tags=["Diagnostic"])
@@ -53,20 +54,38 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest):
             written_response=req.written_response,
         )
 
-        # 2. Generar retos del nivel asignado
+        # 2. Generar retos para niveles anteriores (fuera de sesión DB)
+        levels_order = ["beginner", "intermediate", "advanced"]
+        assigned_index = levels_order.index(evaluation["level_result"])
+        lower_challenges_data = {}
+
+        # 3. Guardar todo en BD
+        with Session(engine) as db:
+            # Obtener perfil del estudiante
+            student_prof = db.exec(
+                select(StudentProfile).where(StudentProfile.user_id == req.user_id)
+            ).first()
+
+            student_profile_dict = None
+            if student_prof:
+                student_profile_dict = {
+                    "has_profile": True,
+                    "semester": student_prof.semester,
+                    "specialization": student_prof.specialization,
+                    "self_assessed_level": student_prof.self_assessed_level,
+                }
+
+        # 4. Generar retos del nivel asignado con perfil
         challenges_data = await ai_service.generate_personalized_challenges(
             module_name=req.module_name,
             level=evaluation["level_result"],
             user_id=req.user_id,
             diagnostic=evaluation,
             count=5,
+            student_profile=student_profile_dict,
         )
 
-        # 3. Generar retos para niveles anteriores
-        levels_order = ["beginner", "intermediate", "advanced"]
-        assigned_index = levels_order.index(evaluation["level_result"])
-        lower_challenges_data = {}
-
+        # 5. Generar retos para niveles anteriores con perfil
         for lower_level in levels_order[:assigned_index]:
             lower_challenges_data[lower_level] = await ai_service.generate_personalized_challenges(
                 module_name=req.module_name,
@@ -74,9 +93,10 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest):
                 user_id=req.user_id,
                 diagnostic=evaluation,
                 count=5,
+                student_profile=student_profile_dict,
             )
 
-        # 4. Guardar todo en BD
+        # 6. Guardar todo en BD
         with Session(engine) as db:
             # Limpiar retos personalizados anteriores
             old_challenges = db.exec(
@@ -190,11 +210,11 @@ async def get_user_diagnostic(user_id: int, module_id: int):
             "total_diagnostics": len(diagnostics),
         }
 
+
 @router.delete("/user/{user_id}/module/{module_id}/reset")
 async def reset_diagnostic(user_id: int, module_id: int):
     """Elimina el diagnóstico y retos personalizados para repetir el test."""
     with Session(engine) as db:
-        # Eliminar diagnósticos
         diagnostics = db.exec(
             select(Diagnostic).where(
                 Diagnostic.user_id == user_id,
@@ -204,7 +224,6 @@ async def reset_diagnostic(user_id: int, module_id: int):
         for d in diagnostics:
             db.delete(d)
 
-        # Eliminar retos personalizados del usuario
         challenges = db.exec(
             select(Challenge).where(
                 Challenge.user_id == user_id,
@@ -214,7 +233,6 @@ async def reset_diagnostic(user_id: int, module_id: int):
         for c in challenges:
             db.delete(c)
 
-        # Resetear nivel a beginner
         progress = db.exec(
             select(Progress).where(
                 Progress.user_id == user_id,

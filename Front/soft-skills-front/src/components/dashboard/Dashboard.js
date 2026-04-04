@@ -56,6 +56,7 @@ function Dashboard() {
       try {
         const res = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
         dbUser = res.data;
+        
       } catch {
         const res = await axios.post(`${API_URL}/users`, {
           auth0_id: user.sub,
@@ -65,7 +66,13 @@ function Dashboard() {
         dbUser = res.data;
       }
       setUserData(dbUser);
-
+      const profileRes = await axios.get(
+          `${API_URL}/students/profile/user/${dbUser.id}`,
+        );
+        if (!profileRes.data.has_profile) {
+          navigate("/onboarding");
+          return;
+        }
       const modsRes = await axios.get(`${API_URL}/modules`);
       setModules(modsRes.data);
 

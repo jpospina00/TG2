@@ -7,7 +7,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
-import { FiArrowLeft, FiArrowRight, FiCheckCircle } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiArrowRight,
+  FiCheckCircle,
+  FiMessageCircle,
+  FiUsers,
+  FiEdit3
+} from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Diagnostic.css";
 
@@ -147,9 +154,21 @@ function Diagnostic() {
         </nav>
         <div className="diag-content">
           <div className="diag-intro-card">
-            <div className="diag-intro-icon" style={{ background: moduleName === "empathy" ? "rgba(37,99,235,0.15)" : "rgba(14,165,233,0.15)" }}>
-              <span style={{ fontSize: 32 }}>{moduleName === "empathy" ? "💬" : "🤝"}</span>
-            </div>
+            <div
+  className="diag-intro-icon"
+  style={{
+    background:
+      moduleName === "empathy"
+        ? "rgba(37,99,235,0.15)"
+        : "rgba(14,165,233,0.15)",
+  }}
+>
+  {moduleName === "empathy" ? (
+    <FiMessageCircle size={32} color="#2563EB" />
+  ) : (
+    <FiUsers size={32} color="#0EA5E9" />
+  )}
+</div>
             <h1 className="diag-intro-title">Diagnóstico de {moduleLabel}</h1>
             <p className="diag-intro-desc">
               Antes de comenzar a practicar, evaluaremos tu nivel actual para

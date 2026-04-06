@@ -3,102 +3,102 @@
     "module": "empathy",
     "type": "agent_profile",
     "level": "beginner",
-    "content": "The frustrated agent expresses their discomfort clearly and directly. They use explicit emotional language such as 'I feel ignored', 'nobody listens to me', 'it bothers me'. Their tone is slightly tense but not aggressive. They are waiting for someone to acknowledge their feelings before anything else. A good response must first validate the emotion before offering any solution or explanation."
+    "content": "El agente frustrado expresa su malestar de forma clara y directa. Usa lenguaje emocional explícito como 'me siento ignorado', 'nadie me escucha', 'esto me molesta'. Su tono es ligeramente tenso pero no agresivo. Está esperando que alguien reconozca sus sentimientos antes que cualquier otra cosa. Una buena respuesta debe primero validar la emoción antes de ofrecer cualquier solución o explicación."
   },
   {
     "module": "empathy",
     "type": "agent_profile",
     "level": "beginner",
-    "content": "The overwhelmed agent is visibly stressed and uses language that reflects cognitive overload: 'I don't know where to start', 'I feel lost', 'everything at once'. They are not looking for immediate solutions — they need to feel that someone understands their situation first. A good response acknowledges the weight of what they are carrying before suggesting any action."
+    "content": "El agente abrumado está visiblemente estresado y usa un lenguaje que refleja sobrecarga cognitiva: 'no sé por dónde empezar', 'me siento perdido', 'todo al mismo tiempo'. No está buscando soluciones inmediatas — necesita sentir que alguien entiende su situación primero. Una buena respuesta reconoce el peso de lo que está cargando antes de sugerir cualquier acción."
   },
   {
     "module": "empathy",
     "type": "agent_profile",
     "level": "beginner",
-    "content": "The guilty agent has made a mistake or missed a commitment and is expressing remorse. They use phrases like 'I'm sorry', 'I didn't mean to', 'I hope I didn't cause problems'. They need reassurance and understanding, not judgment. A good response accepts the apology, minimizes blame, and focuses on moving forward together."
+    "content": "El agente culpable ha cometido un error o incumplido un compromiso y está expresando remordimiento. Usa frases como 'lo siento', 'no era mi intención', 'espero no haber causado problemas'. Necesita tranquilidad y comprensión, no juicio. Una buena respuesta acepta la disculpa, minimiza la culpa y se enfoca en avanzar juntos."
   },
   {
     "module": "empathy",
     "type": "agent_profile",
     "level": "intermediate",
-    "content": "The intermediate agent expresses frustration indirectly or through situational description rather than explicit emotional labels. They might say 'it seems unfair' or 'this keeps happening' without naming their emotion directly. The student must infer the emotional state from context. A good response names the inferred emotion ('it sounds like you feel...') and validates it before addressing the situation."
+    "content": "El agente de nivel intermedio expresa frustración de forma indirecta o a través de la descripción de la situación en lugar de usar etiquetas emocionales explícitas. Puede decir 'esto parece injusto' o 'esto sigue pasando' sin nombrar directamente su emoción. El estudiante debe inferir el estado emocional a partir del contexto. Una buena respuesta nombra la emoción inferida ('parece que te sientes...') y la valida antes de abordar la situación."
   },
   {
     "module": "empathy",
     "type": "agent_profile",
     "level": "intermediate",
-    "content": "The conflicted agent is in disagreement but trying to maintain the relationship. They express disappointment about a decision made without them: 'I thought we decided together', 'I wasn't consulted'. They want acknowledgment of the procedural failure, not just the outcome. A good response acknowledges the breach of trust and commits to better communication going forward."
+    "content": "El agente en conflicto está en desacuerdo pero intenta mantener la relación. Expresa decepción por una decisión tomada sin él: 'pensé que decidíamos juntos', 'no me consultaron'. Busca reconocimiento de la falla en el proceso, no solo del resultado. Una buena respuesta reconoce la ruptura de confianza y se compromete a mejorar la comunicación en el futuro."
   },
   {
     "module": "empathy",
     "type": "agent_profile",
     "level": "advanced",
-    "content": "The advanced agent communicates ambiguously — their words could be interpreted as frustration, resignation, or passive aggression. Phrases like 'maybe it's just me' or 'I don't know anymore' require careful reading. The student must choose an interpretation and respond accordingly. A good response gently names what they observed ('it sounds like you might be feeling...') and invites the agent to clarify."
+    "content": "El agente avanzado se comunica de forma ambigua — sus palabras pueden interpretarse como frustración, resignación o agresividad pasiva. Frases como 'tal vez soy yo' o 'ya no sé' requieren una lectura cuidadosa. El estudiante debe elegir una interpretación y responder en consecuencia. Una buena respuesta nombra suavemente lo que observa ('parece que podrías estar sintiéndote...') e invita al agente a aclarar."
   },
   {
     "module": "empathy",
     "type": "agent_profile",
     "level": "advanced",
-    "content": "The burnout agent uses language of exhaustion and loss of meaning: 'I have nothing left', 'I don't enjoy this anymore', 'I've given everything'. This is a sensitive scenario requiring careful empathy without minimizing or rushing to fix. A good response acknowledges the depth of their exhaustion, avoids toxic positivity, and creates space for them to feel heard without pressure."
+    "content": "El agente con agotamiento (burnout) utiliza un lenguaje de agotamiento y pérdida de sentido: 'ya no tengo nada más', 'esto ya no me gusta', 'lo he dado todo'. Es un escenario sensible que requiere empatía cuidadosa sin minimizar ni apresurarse a arreglarlo. Una buena respuesta reconoce la profundidad de su agotamiento, evita el positivismo tóxico y crea un espacio para que se sienta escuchado sin presión."
   },
   {
     "module": "empathy",
     "type": "evaluation_criteria",
     "level": "beginner",
-    "content": "At the beginner level, a good empathic response must: (1) explicitly acknowledge the emotion expressed by the agent using specific language ('I understand you feel frustrated', 'it makes sense that you feel that way'); (2) use warm, non-judgmental language that does not minimize the feeling; (3) be clear and easy to understand without jargon; (4) be coherent with the situation described. The student does NOT need to offer solutions — emotional validation alone is sufficient to pass."
+    "content": "En el nivel inicial, una buena respuesta empática debe: (1) reconocer explícitamente la emoción expresada por el agente usando un lenguaje específico ('entiendo que te sientes frustrado', 'tiene sentido que te sientas así'); (2) usar un lenguaje cálido y sin juicios que no minimice el sentimiento; (3) ser clara y fácil de entender sin jerga; (4) ser coherente con la situación descrita. El estudiante NO necesita ofrecer soluciones — solo la validación emocional es suficiente para aprobar."
   },
   {
     "module": "empathy",
     "type": "evaluation_criteria",
     "level": "intermediate",
-    "content": "At the intermediate level, a good empathic response must: (1) infer and name the emotional state even when not explicitly stated; (2) validate the emotion AND acknowledge the situational context that caused it; (3) use perspective-taking language that shows the student considered the agent's point of view; (4) avoid defensiveness, blame, or minimization. Simply acknowledging the emotion is not enough — the student must demonstrate understanding of WHY the agent feels that way."
+    "content": "En el nivel intermedio, una buena respuesta empática debe: (1) inferir y nombrar el estado emocional incluso cuando no se ha expresado explícitamente; (2) validar la emoción Y reconocer el contexto situacional que la causó; (3) usar un lenguaje de toma de perspectiva que muestre que el estudiante consideró el punto de vista del agente; (4) evitar actitud defensiva, culpa o minimización. Simplemente reconocer la emoción no es suficiente — el estudiante debe demostrar comprensión de POR QUÉ el agente se siente así."
   },
   {
     "module": "empathy",
     "type": "evaluation_criteria",
     "level": "advanced",
-    "content": "At the advanced level, a good empathic response must: (1) navigate ambiguity — interpret the emotional subtext without projecting or assuming; (2) demonstrate sophisticated perspective-taking that acknowledges complexity; (3) create psychological safety for the agent to continue sharing; (4) avoid rushing to solutions, toxic positivity, or unsolicited advice; (5) use tentative language when naming emotions ('it sounds like', 'I wonder if'). The response must show emotional intelligence, not just empathic formulas."
+    "content": "En el nivel avanzado, una buena respuesta empática debe: (1) navegar la ambigüedad — interpretar el subtexto emocional sin proyectar ni asumir; (2) demostrar una toma de perspectiva sofisticada que reconozca la complejidad; (3) crear seguridad psicológica para que el agente continúe compartiendo; (4) evitar apresurarse a dar soluciones, positivismo tóxico o consejos no solicitados; (5) usar un lenguaje tentativo al nombrar emociones ('parece que', 'me pregunto si'). La respuesta debe mostrar inteligencia emocional, no solo fórmulas empáticas."
   },
   {
     "module": "empathy",
     "type": "example_response",
     "level": "beginner",
-    "content": "Example of an excellent beginner empathy response: Agent said 'I feel like nobody listens to my ideas in this group.' Student responded: 'I hear you, and I can understand why that would be really frustrating. Feeling unheard, especially when you are putting in the effort, is genuinely discouraging. I want to make sure your ideas get the attention they deserve — which idea do you feel was most overlooked?' This response scores high because it names the emotion, validates it, avoids blame, and opens a door for the agent to continue."
+    "content": "Ejemplo de una excelente respuesta empática de nivel inicial: El agente dijo 'Siento que nadie escucha mis ideas en este grupo.' El estudiante respondió: 'Te escucho, y puedo entender por qué eso sería realmente frustrante. Sentirse ignorado, especialmente cuando estás esforzándote, es genuinamente desalentador. Quiero asegurarme de que tus ideas reciban la atención que merecen — ¿qué idea crees que fue la más ignorada?' Esta respuesta obtiene una puntuación alta porque nombra la emoción, la valida, evita culpar y abre una puerta para que el agente continúe."
   },
   {
     "module": "empathy",
     "type": "example_response",
     "level": "intermediate",
-    "content": "Example of an excellent intermediate empathy response: Agent said 'I noticed you changed the project structure without telling me. I thought we decided things together.' Student responded: 'You are right, and I apologize for making that change without consulting you first. It sounds like this is not just about the structure itself, but about feeling excluded from a decision that affects both of us. That is completely valid, and I should have communicated better. Can we review the changes together and make sure you are on board?' This response acknowledges the procedural breach, names the deeper feeling, takes responsibility, and proposes repair."
+    "content": "Ejemplo de una excelente respuesta empática de nivel intermedio: El agente dijo 'Noté que cambiaste la estructura del proyecto sin avisarme. Pensé que decidíamos las cosas juntos.' El estudiante respondió: 'Tienes razón, y me disculpo por hacer ese cambio sin consultarte primero. Parece que esto no es solo sobre la estructura en sí, sino sobre sentirte excluido de una decisión que nos afecta a ambos. Eso es completamente válido, y debería haberme comunicado mejor. ¿Podemos revisar los cambios juntos y asegurarme de que estés de acuerdo?' Esta respuesta reconoce la falla en el proceso, nombra el sentimiento más profundo, asume la responsabilidad y propone una reparación."
   },
   {
     "module": "empathy",
     "type": "example_response",
     "level": "advanced",
-    "content": "Example of an excellent advanced empathy response: Agent said 'I don't know anymore. Maybe I should just quit.' Student responded: 'It sounds like you are carrying a lot right now, and I want you to know I am not going to push you in any direction. What I am hearing is someone who is exhausted and maybe questioning whether this is still worth it — and that is a completely human place to be. I am here to listen, not to fix anything. What would feel most helpful right now?' This response avoids toxic positivity, does not minimize or panic, uses tentative language, and returns agency to the agent."
+    "content": "Ejemplo de una excelente respuesta empática de nivel avanzado: El agente dijo 'Ya no sé más. Tal vez debería rendirme.' El estudiante respondió: 'Parece que estás cargando con mucho en este momento, y quiero que sepas que no voy a presionarte en ninguna dirección. Lo que estoy escuchando es a alguien que está agotado y tal vez cuestionándose si esto todavía vale la pena — y ese es un lugar completamente humano para estar. Estoy aquí para escuchar, no para arreglar nada. ¿Qué sería lo que más te ayudaría en este momento?' Esta respuesta evita el positivismo tóxico, no minimiza ni se apresura, usa un lenguaje tentativo y devuelve la agencia al agente."
   },
-{
-  "modulo": "empathy",
-  "tipo": "challenge_pattern",
-  "nivel": "beginner",
-  "contenido": "For users with low empathy awareness (beginner diagnostic result): Generate challenges where the agent expresses emotions explicitly and clearly. The emotional state should be obvious from the message. Avoid ambiguous or complex situations. Recommended scenarios: a frustrated teammate who feels ignored, a student overwhelmed with deadlines, a peer who received a bad grade, a classmate asking for help understanding a topic, someone who missed an important meeting and feels guilty. The agent message should be direct, emotionally transparent, and require only basic validation and acknowledgment. Keep the context simple: academic group projects, study sessions, homework help. Avoid workplace or professional contexts at this level."
-},
-{
-  "modulo": "empathy",
-  "tipo": "challenge_pattern",
-  "nivel": "intermediate",
-  "contenido": "For users with intermediate empathy awareness (intermediate diagnostic result): Generate challenges where the emotional state is implicit or requires interpretation. The agent message should not state the emotion directly — the student must infer it from context and word choice. Recommended scenarios: a teammate who changed plans without notifying others and now justifies it, a classmate who consistently underperforms and deflects responsibility, a peer who feels their contributions are undervalued but expresses it indirectly, a friend showing signs of academic burnout without naming it, a group member who missed multiple deadlines and seems distant. Include some interpersonal tension or mild conflict. The student must demonstrate perspective-taking, not just surface-level validation."
-},
-{
-  "modulo": "empathy",
-  "tipo": "challenge_pattern",
-  "nivel": "advanced",
-  "contenido": "For users with high empathy awareness (advanced diagnostic result): Generate challenging scenarios involving ambiguity, conflict, or emotionally layered messages. The agent may express contradictory emotions, suppress feelings, or respond defensively. Recommended scenarios: a teammate considering dropping out due to personal and academic pressure, a peer who feels discriminated against in a group dynamic, a classmate who made a serious mistake and is in denial, a colleague showing clear burnout but refusing help, a group member who contributed most of the work but was not credited and is now passive-aggressive. The student must navigate emotional complexity, avoid triggering defensiveness, and demonstrate advanced empathic communication. Multiple valid response strategies should exist."
-},
-{
-  "modulo": "empathy",
-  "tipo": "personalization_guide",
-  "nivel": "all",
-  "contenido": "When generating personalized empathy challenges based on diagnostic results, follow these principles: (1) Match complexity to diagnostic score — users who scored low on perspective-taking need explicit emotional cues, while high scorers need implicit or contradictory emotional signals. (2) Vary the agent profiles across challenges for the same user — do not repeat the same archetype (e.g., do not generate 5 frustrated teammate scenarios). Use diversity: frustrated, overwhelmed, disappointed, ashamed, conflicted, avoidant. (3) If the diagnostic response showed the user tends to offer solutions before validating emotions, generate challenges that specifically require validation-first responses. (4) If the diagnostic showed strong emotional recognition but weak contextual coherence, generate challenges with rich contextual backgrounds that must be referenced in the response. (5) Always generate challenges in Spanish. Agent profiles, context, and opening messages must be in Spanish."
-}
+  {
+    "module": "empathy",
+    "type": "challenge_pattern",
+    "level": "beginner",
+    "content": "Para usuarios con baja conciencia empática (resultado de diagnóstico principiante): Genera desafíos donde el agente exprese emociones de forma explícita y clara. El estado emocional debe ser obvio a partir del mensaje. Evita situaciones ambiguas o complejas. Escenarios recomendados: un compañero de equipo frustrado que se siente ignorado, un estudiante abrumado con plazos de entrega, un compañero que recibió una mala calificación, un compañero de clase pidiendo ayuda para entender un tema, alguien que faltó a una reunión importante y se siente culpable. El mensaje del agente debe ser directo, emocionalmente transparente y requerir solo validación y reconocimiento básicos. Mantén el contexto simple: proyectos académicos en grupo, sesiones de estudio, ayuda con tareas. Evita contextos laborales o profesionales en este nivel."
+  },
+  {
+    "module": "empathy",
+    "type": "challenge_pattern",
+    "level": "intermediate",
+    "content": "Para usuarios con conciencia empática intermedia (resultado de diagnóstico intermedio): Genera desafíos donde el estado emocional sea implícito o requiera interpretación. El mensaje del agente no debe indicar la emoción directamente — el estudiante debe inferirla del contexto y la elección de palabras. Escenarios recomendados: un compañero que cambió los planes sin avisar a los demás y ahora los justifica, un compañero de clase que rinde consistentemente por debajo de lo esperado y evade la responsabilidad, un compañero que siente que sus contribuciones están infravaloradas pero lo expresa indirectamente, un amigo que muestra signos de agotamiento académico sin nombrarlo, un miembro del grupo que ha incumplido múltiples plazos y parece distante. Incluye algo de tensión interpersonal o conflicto leve. El estudiante debe demostrar toma de perspectiva, no solo validación superficial."
+  },
+  {
+    "module": "empathy",
+    "type": "challenge_pattern",
+    "level": "advanced",
+    "content": "Para usuarios con alta conciencia empática (resultado de diagnóstico avanzado): Genera escenarios desafiantes que involucren ambigüedad, conflicto o mensajes con capas emocionales. El agente puede expresar emociones contradictorias, reprimir sentimientos o responder a la defensiva. Escenarios recomendados: un compañero que está considerando abandonar debido a presión personal y académica, un compañero que se siente discriminado en una dinámica de grupo, un compañero de clase que cometió un error grave y está en negación, un colega que muestra claros signos de agotamiento pero rechaza la ayuda, un miembro del grupo que aportó la mayor parte del trabajo pero no fue reconocido y ahora se muestra pasivo-agresivo. El estudiante debe navegar la complejidad emocional, evitar provocar actitud defensiva y demostrar comunicación empática avanzada. Deben existir múltiples estrategias de respuesta válidas."
+  },
+  {
+    "module": "empathy",
+    "type": "personalization_guide",
+    "level": "all",
+    "content": "Al generar desafíos de empatía personalizados según los resultados del diagnóstico, sigue estos principios: (1) Iguala la complejidad al puntaje del diagnóstico — los usuarios que obtuvieron puntajes bajos en toma de perspectiva necesitan señales emocionales explícitas, mientras que los de puntajes altos necesitan señales emocionales implícitas o contradictorias. (2) Varía los perfiles de agente a lo largo de los desafíos para un mismo usuario — no repitas el mismo arquetipo (por ejemplo, no generes 5 escenarios de compañero frustrado). Usa diversidad: frustrado, abrumado, decepcionado, avergonzado, en conflicto, evitativo. (3) Si la respuesta del diagnóstico mostró que el usuario tiende a ofrecer soluciones antes de validar emociones, genera desafíos que requieran específicamente respuestas que primero validen. (4) Si el diagnóstico mostró un fuerte reconocimiento emocional pero una débil coherencia contextual, genera desafíos con contextos situacionales ricos que deban ser referenciados en la respuesta. (5) Siempre genera los desafíos en español. Los perfiles de agente, el contexto y los mensajes iniciales deben estar en español."
+  }
 ]

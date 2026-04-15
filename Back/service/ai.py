@@ -118,27 +118,28 @@ def evaluate_simple_response(
 ) -> tuple[str, bool]:
     rag = get_full_context(module_name, level, agent_profile)
 
+    # FIX 1: labels del RAG block en español
     rag_block = ""
     if rag["evaluation_context"]:
-        rag_block += f"\n\n--- Evaluation Reference ---\n{rag['evaluation_context']}"
+        rag_block += f"\n\n--- Referencia de Evaluación ---\n{rag['evaluation_context']}"
     if rag["example_context"]:
-        rag_block += f"\n\n--- Example of Excellent Response ---\n{rag['example_context']}"
+        rag_block += f"\n\n--- Ejemplo de Respuesta Excelente ---\n{rag['example_context']}"
     if rag["agent_context"]:
-        rag_block += f"\n\n--- Agent Behavior Reference ---\n{rag['agent_context']}"
+        rag_block += f"\n\n--- Referencia de Comportamiento del Agente ---\n{rag['agent_context']}"
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPTS[module_name]},
         {
             "role": "user",
             "content": f"""
-Scenario context: {context}
-Agent profile: {agent_profile}
-Agent's opening message: "{opening_message}"
-Student's response: "{student_response}"
+Contexto del escenario: {context}
+Perfil del agente: {agent_profile}
+Mensaje inicial del agente: "{opening_message}"
+Respuesta del estudiante: "{student_response}"
 {rag_block}
 
-Please evaluate the student's response based on the criteria and the reference material above.
-End with RESULTADO: APROBADO or RESULTADO: NO APROBADO.
+Evalúa la respuesta del estudiante basándote en los criterios y el material de referencia.
+Termina con RESULTADO: APROBADO o RESULTADO: NO APROBADO.
 """
         }
     ]
@@ -159,14 +160,15 @@ def generate_agent_reply(
 ) -> str:
     rag = get_full_context(module_name, level, agent_profile)
 
+    # FIX 1: label en español
     agent_context_block = ""
     if rag["agent_context"]:
-        agent_context_block = f"\n\n--- Behavioral Reference ---\n{rag['agent_context']}"
+        agent_context_block = f"\n\n--- Referencia de Comportamiento ---\n{rag['agent_context']}"
 
     system_content = f"""{AGENT_SYSTEM_PROMPTS[module_name]}
 
-Agent profile: {agent_profile}
-Context: {context}{agent_context_block}"""
+Perfil del agente: {agent_profile}
+Contexto: {context}{agent_context_block}"""
 
     groq_messages = [{"role": "system", "content": system_content}]
     for msg in conversation_history:
@@ -185,15 +187,16 @@ def evaluate_conversation(
 ) -> tuple[str, bool]:
     rag = get_full_context(module_name, level, agent_profile)
 
+    # FIX 1: labels en español
     rag_block = ""
     if rag["evaluation_context"]:
-        rag_block += f"\n\n--- Evaluation Reference ---\n{rag['evaluation_context']}"
+        rag_block += f"\n\n--- Referencia de Evaluación ---\n{rag['evaluation_context']}"
     if rag["example_context"]:
-        rag_block += f"\n\n--- Example of Excellent Response ---\n{rag['example_context']}"
+        rag_block += f"\n\n--- Ejemplo de Respuesta Excelente ---\n{rag['example_context']}"
 
     history_text = ""
     for msg in conversation_history:
-        label = "Agent" if msg["role"] == "agent" else "Student"
+        label = "Agente" if msg["role"] == "agent" else "Estudiante"
         history_text += f"{label}: {msg['content']}\n"
 
     messages = [
@@ -201,15 +204,15 @@ def evaluate_conversation(
         {
             "role": "user",
             "content": f"""
-Scenario context: {context}
-Agent profile: {agent_profile}
+Contexto del escenario: {context}
+Perfil del agente: {agent_profile}
 
-Full conversation:
+Conversación completa:
 {history_text}
 {rag_block}
 
-Evaluate the student's overall performance.
-End with RESULTADO: APROBADO or RESULTADO: NO APROBADO.
+Evalúa el desempeño general del estudiante.
+Termina con RESULTADO: APROBADO o RESULTADO: NO APROBADO.
 """
         }
     ]
@@ -226,30 +229,35 @@ def generate_new_challenge(
     level: str,
     challenge_type: str
 ) -> dict:
-    rag = get_full_context(module_name, level, "new challenge generation")
+    rag = get_full_context(module_name, level, "generación de nuevo reto")
 
+    # FIX 3: aprovechar challenge_pattern y personalization_guide
     rag_block = ""
     if rag["evaluation_context"]:
-        rag_block = f"\n\nReference for this level:\n{rag['evaluation_context']}"
+        rag_block += f"\n\nReferencia para este nivel:\n{rag['evaluation_context']}"
+    if rag["challenge_pattern"]:
+        rag_block += f"\n\nPatrón de reto para este nivel:\n{rag['challenge_pattern']}"
+    if rag["personalization_guide"]:
+        rag_block += f"\n\nGuía de personalización:\n{rag['personalization_guide']}"
 
     messages = [
         {
             "role": "system",
-            "content": "You are a curriculum designer for a soft skills training system. Generate realistic challenges. Always respond with valid JSON only, no extra text."
+            "content": "Eres un diseñador de currículum para un sistema de entrenamiento en habilidades blandas. Genera retos realistas. Responde siempre con JSON válido únicamente, sin texto adicional."
         },
         {
             "role": "user",
             "content": f"""
-Generate a new {module_name} challenge:
-- Level: {level}
-- Type: {challenge_type}
+Genera un nuevo reto de {module_name}:
+- Nivel: {level}
+- Tipo: {challenge_type}
 {rag_block}
 
-Return ONLY a JSON object:
+Devuelve ÚNICAMENTE un objeto JSON:
 {{
-  "agent_profile": "Brief description of the virtual agent",
-  "context": "Background of the communicative situation",
-  "opening_message": "First message from the agent in Spanish"
+  "agent_profile": "Descripción breve del agente virtual en español",
+  "context": "Contexto de la situación comunicativa en español",
+  "opening_message": "Primer mensaje del agente en español"
 }}
 """
         }
@@ -272,9 +280,11 @@ async def generate_diagnostic_questions(module_name: str) -> dict:
     """Genera 3 preguntas de opción múltiple para el diagnóstico."""
     client = get_groq_client()
 
+    # FIX 2: argumentos corregidos — level e agent_profile en el orden correcto
+    ctx = get_full_context(module_name, "beginner", "preguntas de diagnóstico")
+    context = ctx.get("evaluation_context", "")
+
     if module_name == "empathy":
-        ctx = get_full_context("empathy", "evaluation_criteria", "beginner")
-        context = ctx.get("evaluation_context", "")
         prompt = f"""Eres un experto en comunicación empática. 
 Genera exactamente 3 preguntas de opción múltiple en español para evaluar el nivel de empatía cognitiva de un estudiante universitario de Ingeniería de Sistemas.
 
@@ -312,8 +322,6 @@ Responde ÚNICAMENTE en este formato JSON sin texto adicional:
   ]
 }}"""
     else:
-        ctx = get_full_context("networking", "evaluation_criteria", "beginner")
-        context = ctx.get("evaluation_context", "")
         prompt = f"""Eres un experto en networking profesional.
 Genera exactamente 3 preguntas de opción múltiple en español para evaluar el nivel de networking de un estudiante universitario de Ingeniería de Sistemas.
 
@@ -413,7 +421,8 @@ async def evaluate_diagnostic_response(
     """Evalúa la respuesta escrita del diagnóstico y determina el nivel."""
     client = get_groq_client()
 
-    ctx = get_full_context(module_name, "evaluation_criteria", "intermediate")
+    # FIX 2: argumentos corregidos — level="intermediate", agent_profile descriptivo
+    ctx = get_full_context(module_name, "intermediate", "evaluación de diagnóstico")
     context = ctx.get("evaluation_context", "")
 
     if module_name == "empathy":
@@ -486,11 +495,9 @@ async def generate_personalized_challenges(
     """Genera retos personalizados basados en el diagnóstico y perfil del usuario."""
     client = get_groq_client()
 
-    ctx = get_full_context(module_name, "challenge_pattern", level)
-    pattern_context = ctx.get("agent_context", "")
-
-    pers_ctx = get_full_context(module_name, "personalization_guide", "all")
-    personalization_context = pers_ctx.get("agent_context", "")
+    ctx = get_full_context(module_name, level, "generación de retos personalizados")
+    pattern_context = ctx.get("challenge_pattern", "")
+    personalization_context = ctx.get("personalization_guide", "")
 
     if module_name == "empathy":
         level_specs = {

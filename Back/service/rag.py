@@ -33,15 +33,36 @@ def query_context(
     doc_types: list[str] = None,
     n_results: int = 3
 ) -> str:
-    """
-    Queries ChromaDB for relevant context documents.
-    Returns a formatted string ready to inject into a prompt.
-    """
     collection = get_collection()
 
+    # Filtro base por módulo
     where_filter = {"module": module}
-    if doc_types and len(doc_types) == 1:
-        where_filter["type"] = doc_types[0]
+
+    # Agregar filtro por level solo si no es "all"
+    if level and level != "all":
+        if doc_types and len(doc_types) == 1:
+            where_filter = {
+                "$and": [
+                    {"module": {"$eq": module}},
+                    {"level": {"$eq": level}},
+                    {"type": {"$eq": doc_types[0]}},
+                ]
+            }
+        else:
+            where_filter = {
+                "$and": [
+                    {"module": {"$eq": module}},
+                    {"level": {"$eq": level}},
+                ]
+            }
+    else:
+        if doc_types and len(doc_types) == 1:
+            where_filter = {
+                "$and": [
+                    {"module": {"$eq": module}},
+                    {"type": {"$eq": doc_types[0]}},
+                ]
+            }
 
     try:
         results = collection.query(
@@ -54,11 +75,7 @@ def query_context(
         if not documents:
             return ""
 
-        context_parts = []
-        for i, doc in enumerate(documents):
-            context_parts.append(f"[Context {i+1}]: {doc}")
-
-        return "\n\n".join(context_parts)
+        return "\n\n".join([f"[Context {i+1}]: {doc}" for i, doc in enumerate(documents)])
 
     except Exception:
         return ""
@@ -68,7 +85,7 @@ def get_agent_context(module: str, level: str, agent_profile: str) -> str:
     return query_context(
         module=module,
         level=level,
-        query_text=f"agent behavior {agent_profile}",
+        query_text=f"comportamiento del agente {agent_profile} {module}",
         doc_types=["agent_profile"],
         n_results=2
     )
@@ -78,7 +95,7 @@ def get_evaluation_context(module: str, level: str) -> str:
     return query_context(
         module=module,
         level=level,
-        query_text=f"evaluation criteria {module} {level}",
+        query_text=f"criterios de evaluación {module} {level}",
         doc_types=["evaluation_criteria"],
         n_results=2
     )
@@ -88,18 +105,41 @@ def get_example_context(module: str, level: str) -> str:
     return query_context(
         module=module,
         level=level,
-        query_text=f"example response {module} {level}",
+        query_text=f"ejemplo de respuesta excelente {module} {level}",
         doc_types=["example_response"],
+        n_results=1
+    )
+
+
+def get_challenge_pattern(module: str, level: str) -> str:
+    return query_context(
+        module=module,
+        level=level,
+        query_text=f"patrón de reto {module} nivel {level}",
+        doc_types=["challenge_pattern"],
+        n_results=1
+    )
+
+
+def get_personalization_guide(module: str) -> str:
+    return query_context(
+        module=module,
+        level="all",
+        query_text=f"guía de personalización {module}",
+        doc_types=["personalization_guide"],
         n_results=1
     )
 
 
 def get_full_context(module: str, level: str, agent_profile: str) -> dict:
     """
-    Returns all relevant context for a challenge in a structured dict.
+    Retorna todo el contexto relevante para un reto.
+    Ahora incluye challenge_pattern y personalization_guide correctamente.
     """
     return {
         "agent_context": get_agent_context(module, level, agent_profile),
         "evaluation_context": get_evaluation_context(module, level),
-        "example_context": get_example_context(module, level)
+        "example_context": get_example_context(module, level),
+        "challenge_pattern": get_challenge_pattern(module, level),
+        "personalization_guide": get_personalization_guide(module),
     }

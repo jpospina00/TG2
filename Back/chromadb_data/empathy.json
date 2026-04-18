@@ -100,5 +100,53 @@
     "type": "personalization_guide",
     "level": "all",
     "content": "Al generar desafíos de empatía personalizados según los resultados del diagnóstico, sigue estos principios: (1) Iguala la complejidad al puntaje del diagnóstico — los usuarios que obtuvieron puntajes bajos en toma de perspectiva necesitan señales emocionales explícitas, mientras que los de puntajes altos necesitan señales emocionales implícitas o contradictorias. (2) Varía los perfiles de agente a lo largo de los desafíos para un mismo usuario — no repitas el mismo arquetipo (por ejemplo, no generes 5 escenarios de compañero frustrado). Usa diversidad: frustrado, abrumado, decepcionado, avergonzado, en conflicto, evitativo. (3) Si la respuesta del diagnóstico mostró que el usuario tiende a ofrecer soluciones antes de validar emociones, genera desafíos que requieran específicamente respuestas que primero validen. (4) Si el diagnóstico mostró un fuerte reconocimiento emocional pero una débil coherencia contextual, genera desafíos con contextos situacionales ricos que deban ser referenciados en la respuesta. (5) Siempre genera los desafíos en español. Los perfiles de agente, el contexto y los mensajes iniciales deben estar en español."
-  }
+  },
+  {
+  "module": "empathy",
+  "type": "evaluation_criteria",
+  "level": "beginner",
+  "content": "Para el Laboratorio de Empatía en nivel inicial, la evaluación se divide en dos partes. IDENTIFICACIÓN DE EMOCIONES: el estudiante debe nombrar al menos una emoción presente (frustración, agotamiento, soledad, culpa, tristeza) y ofrecer una razón del porqué. No se exige profundidad — identificar la emoción explícita es suficiente para aprobar. MENSAJE DE RESPUESTA: debe validar la emoción sin minimizarla, usar lenguaje cálido, y no ofrecer soluciones inmediatas antes de validar. Frases como 'entiendo que te sientes así' o 'tiene sentido que estés agotado' son ejemplos de nivel inicial aprobado. PUNTAJE MÍNIMO PARA APROBAR: promedio de las 4 dimensiones mayor o igual a 6.0."
+},
+{
+  "module": "empathy",
+  "type": "evaluation_criteria",
+  "level": "intermediate",
+  "content": "Para el Laboratorio de Empatía en nivel intermedio, la evaluación es más exigente. IDENTIFICACIÓN DE EMOCIONES: el estudiante debe inferir emociones que no están expresadas explícitamente. Debe nombrar la emoción Y el contexto que la genera. No basta con decir 'está triste' — debe decir 'está frustrado porque siente que su esfuerzo no es reconocido por el equipo'. MENSAJE DE RESPUESTA: debe nombrar la emoción inferida antes de ofrecer cualquier cosa, reconocer el contexto específico de la situación, y evitar respuestas genéricas que podrían aplicarse a cualquier persona. PUNTAJE MÍNIMO PARA APROBAR: promedio mayor o igual a 6.5."
+},
+{
+  "module": "empathy",
+  "type": "evaluation_criteria",
+  "level": "advanced",
+  "content": "Para el Laboratorio de Empatía en nivel avanzado, se evalúa la sofisticación empática. IDENTIFICACIÓN DE EMOCIONES: el estudiante debe reconocer ambigüedad emocional, emociones contradictorias o capas emocionales. Debe usar lenguaje tentativo ('podría ser que sienta', 'me pregunto si hay') y justificar su interpretación. MENSAJE DE RESPUESTA: debe crear seguridad psicológica sin asumir ni proyectar, evitar positivismo tóxico, usar lenguaje tentativo al nombrar emociones, y devolver la agencia a la persona. Respuestas que 'arreglan' el problema sin validar primero no aprueban. PUNTAJE MÍNIMO PARA APROBAR: promedio mayor o igual a 7.0."
+},
+{
+  "module": "empathy",
+  "type": "example_response",
+  "level": "beginner",
+  "content": "Ejemplo de Laboratorio de Empatía nivel inicial APROBADO. SITUACIÓN: 'Llevo tres días sin dormir bien, el sprint termina el viernes y siento que no voy a lograrlo. Nadie del equipo me ha preguntado si necesito ayuda.' IDENTIFICACIÓN DE EMOCIONES (aprobada): 'Creo que está sintiendo agotamiento por la falta de sueño y la presión del deadline. También hay una sensación de abandono o invisibilidad porque nadie del equipo le ha preguntado cómo está.' MENSAJE (aprobado): 'Oye, me di cuenta de que llevas varios días cargando con mucho. ¿Cómo estás? Estoy aquí si necesitas hablar o si puedo ayudarte con algo concreto.' Esta respuesta aprueba porque: identifica agotamiento y abandono, valida antes de ofrecer ayuda, usa lenguaje cálido y no juzga."
+},
+{
+  "module": "empathy",
+  "type": "example_response",
+  "level": "intermediate",
+  "content": "Ejemplo de Laboratorio de Empatía nivel intermedio APROBADO. SITUACIÓN: 'Noté que cambiaron la arquitectura del proyecto sin avisarme. Pensé que éramos un equipo.' IDENTIFICACIÓN DE EMOCIONES (aprobada): 'Parece que está sintiendo exclusión y tal vez una pérdida de confianza en el equipo. No es solo el cambio técnico — es que siente que sus opiniones no se consideran importantes en las decisiones del grupo.' MENSAJE (aprobado): 'Tienes razón, y entiendo que esto va más allá del cambio técnico. Parece que lo que duele es no haber sido incluido en la decisión, y eso es completamente válido. ¿Podemos hablar sobre cómo tomamos decisiones juntos de ahora en adelante?' Esta respuesta aprueba porque: infiere la emoción implícita, nombra el contexto específico, reconoce la ruptura sin ponerse a la defensiva."
+},
+{
+  "module": "empathy",
+  "type": "challenge_pattern",
+  "level": "beginner",
+  "content": "Para retos de selección múltiple en nivel inicial de empatía: genera situaciones donde la emoción es completamente explícita y la respuesta empática correcta es claramente superior. Las opciones incorrectas deben ser: una que minimice la emoción ('tranquilo, ya pasará'), una que juzgue al interlocutor ('debiste haber pedido ayuda antes'), y una que desvíe el foco hacia el problema en lugar de la persona ('lo importante es terminar el sprint'). Para retos de análisis: la situación debe tener una sola emoción clara y el contexto debe ser simple. El mensaje de apertura debe contener lenguaje emocional explícito."
+},
+{
+  "module": "empathy",
+  "type": "challenge_pattern",
+  "level": "intermediate",
+  "content": "Para retos de selección múltiple en nivel intermedio de empatía: genera situaciones donde la emoción es implícita y requiere interpretación. Las opciones incorrectas deben ser plausibles pero menos empáticas: una que responda solo al contenido superficial sin la emoción, una que asuma sin preguntar, y una que ofrezca soluciones antes de validar. Para retos de análisis: la situación debe tener tensión interpersonal leve y el estudiante debe inferir por qué la persona se siente así, no solo qué siente."
+},
+{
+  "module": "empathy",
+  "type": "challenge_pattern",
+  "level": "advanced",
+  "content": "Para retos de selección múltiple en nivel avanzado de empatía: genera situaciones con emociones ambiguas o contradictorias. Las opciones incorrectas deben incluir: una respuesta técnicamente empática pero que asume demasiado, una que usa positivismo tóxico ('todo va a estar bien'), y una que minimiza la complejidad emocional. La correcta debe usar lenguaje tentativo y crear espacio sin asumir. Para retos de análisis: el estudiante debe manejar ambigüedad emocional y usar lenguaje tentativo tanto en la identificación como en el mensaje."
+}
 ]

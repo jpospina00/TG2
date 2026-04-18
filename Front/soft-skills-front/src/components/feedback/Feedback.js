@@ -80,7 +80,7 @@ if (!feedback) {
         state: { newLevel, moduleId, moduleName, userId },
       });
     } else {
-      navigate(`/module/${moduleId}`);
+      moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`);
     }
   }
 
@@ -90,7 +90,7 @@ if (!feedback) {
       <nav className="fb-navbar">
         <button
           className="fb-back-btn"
-          onClick={() => navigate(`/module/${moduleId}`)}
+          onClick={() => moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`)}
         >
           Volver al módulo
         </button>
@@ -189,7 +189,7 @@ if (!feedback) {
             )}
             <button
               className="fb-btn-secondary"
-              onClick={() => navigate(`/module/${moduleId}`)}
+              onClick={() => moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`)}
             >
               Ver módulo
             </button>

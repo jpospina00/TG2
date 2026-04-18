@@ -500,29 +500,31 @@ async def generate_personalized_challenges(
     personalization_context = ctx.get("personalization_guide", "")
 
     if module_name == "empathy":
+        type_instruction = 'El campo "type" debe ser "multiple_choice" o "analysis" — NUNCA "simple" o "conversational".'
         level_specs = {
             "beginner": """
 ESPECIFICACIONES NIVEL INICIAL — EMPATÍA:
 - La emoción del agente debe ser EXPLÍCITA y clara (usa frases como 'me siento frustrado', 'estoy agobiado', 'me duele')
 - Situaciones simples con UN solo problema emocional identificable
-- Tipo: 4 retos simple, 1 conversacional
+- Tipo: 3 retos multiple_choice, 2 retos analysis
 - El agente NO hace preguntas complejas ni tiene actitud defensiva""",
 
             "intermediate": """
 ESPECIFICACIONES NIVEL INTERMEDIO — EMPATÍA:
 - La emoción del agente es IMPLÍCITA — el estudiante debe inferirla del contexto
 - Incluye tensión interpersonal leve: malentendidos, decisiones que afectaron al otro
-- Tipo: 2 retos simple, 3 conversacionales
+- Tipo: 2 retos multiple_choice, 3 retos analysis
 - El agente puede hacer preguntas o expresar expectativas no cumplidas""",
 
             "advanced": """
 ESPECIFICACIONES NIVEL AVANZADO — EMPATÍA:
 - La emoción es AMBIGUA o CONTRADICTORIA — puede interpretarse de varias formas
 - Situaciones complejas: burnout, errores graves, crisis personal
-- Tipo: 1 reto simple, 4 conversacionales
+- Tipo: 1 reto multiple_choice, 4 retos analysis
 - El agente puede ponerse defensivo o resistirse al apoyo"""
         }
     else:
+        type_instruction = 'El campo "type" debe ser "simple" o "conversational".'
         level_specs = {
             "beginner": """
 ESPECIFICACIONES NIVEL INICIAL — NETWORKING:
@@ -602,7 +604,7 @@ Responde ÚNICAMENTE en este formato JSON sin texto adicional:
       "agent_profile": "descripción del perfil del agente virtual",
       "context": "contexto de la situación comunicativa",
       "opening_message": "primer mensaje que lanza el agente al estudiante",
-      "type": "simple|conversational"
+      "type": {type_instruction}
     }}
   ]
 }}"""
@@ -618,3 +620,151 @@ Responde ÚNICAMENTE en este formato JSON sin texto adicional:
     content = content.replace("```json", "").replace("```", "").strip()
     result = json.loads(content)
     return result["challenges"]
+
+async def generate_empathy_options(
+    module_name: str,
+    level: str,
+    agent_profile: str,
+    context: str,
+    opening_message: str,
+) -> list[dict]:
+    """Genera 4 opciones de respuesta para reto de selección múltiple de empatía."""
+    client = get_groq_client()
+
+    ctx = get_full_context(module_name, level, agent_profile)
+    rag_block = ""
+    if ctx["evaluation_context"]:
+        rag_block += f"\nCriterios de evaluación:\n{ctx['evaluation_context']}"
+    if ctx["example_context"]:
+        rag_block += f"\nEjemplos de referencia:\n{ctx['example_context']}"
+
+    prompt = f"""Eres un experto en comunicación empática.
+
+Genera exactamente 4 opciones de respuesta para esta situación de empatía.
+Una sola opción debe ser la más empática. Las otras tres deben ser incorrectas pero plausibles.
+
+SITUACIÓN:
+- Perfil: {agent_profile}
+- Contexto: {context}
+- Mensaje: "{opening_message}"
+
+NIVEL DE DIFICULTAD: {level}
+{rag_block}
+
+REGLAS:
+- Una opción correcta: valida la emoción, usa lenguaje cálido, no juzga ni minimiza
+- Tres opciones incorrectas distribuidas así:
+  * Una que minimice la emoción ("tranquilo, ya pasará")
+  * Una que juzgue o aconseje sin validar primero
+  * Una que ignore la emoción y se enfoque solo en el problema
+- Todas las opciones deben ser respuestas cortas y realistas (1-2 oraciones)
+- Todo en español
+
+Responde ÚNICAMENTE en este formato JSON:
+{{
+  "options": [
+    {{"id": "A", "text": "texto de la opción", "is_correct": true, "explanation": "por qué esta es la más empática"}},
+    {{"id": "B", "text": "texto de la opción", "is_correct": false, "explanation": "por qué esta no es la más empática"}},
+    {{"id": "C", "text": "texto de la opción", "is_correct": false, "explanation": "por qué esta no es la más empática"}},
+    {{"id": "D", "text": "texto de la opción", "is_correct": false, "explanation": "por qué esta no es la más empática"}}
+  ]
+}}"""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1000,
+        temperature=0.7,
+    )
+
+    content = response.choices[0].message.content
+    content = content.replace("```json", "").replace("```", "").strip()
+    result = json.loads(content)
+
+    import random
+    random.shuffle(result["options"])
+    for i, opt in enumerate(result["options"]):
+        opt["id"] = ["A", "B", "C", "D"][i]
+
+    return result["options"]
+
+
+async def evaluate_empathy_lab(
+    module_name: str,
+    level: str,
+    agent_profile: str,
+    context: str,
+    opening_message: str,
+    emotion_identification: str,
+    student_message: str,
+) -> dict:
+    """Evalúa las dos respuestas del Laboratorio de Empatía."""
+    client = get_groq_client()
+
+    ctx = get_full_context(module_name, level, agent_profile)
+    rag_block = ""
+    if ctx["evaluation_context"]:
+        rag_block += f"\nCriterios de evaluación por nivel:\n{ctx['evaluation_context']}"
+    if ctx["example_context"]:
+        rag_block += f"\nEjemplos de referencia:\n{ctx['example_context']}"
+
+    thresholds = {"beginner": 6.0, "intermediate": 6.5, "advanced": 7.0}
+    threshold = thresholds.get(level, 6.0)
+
+    prompt = f"""Eres un experto evaluador de comunicación empática.
+
+Evalúa las dos respuestas de un estudiante universitario de Ingeniería de Sistemas.
+
+SITUACIÓN:
+- Perfil del agente: {agent_profile}
+- Contexto: {context}
+- Mensaje del agente: "{opening_message}"
+
+RESPUESTAS DEL ESTUDIANTE:
+1. Identificación de emociones: "{emotion_identification}"
+2. Mensaje que le enviaría: "{student_message}"
+
+NIVEL DE DIFICULTAD: {level}
+{rag_block}
+
+DIMENSIONES A EVALUAR (puntaje del 1 al 10 cada una):
+- precision_emocional: ¿identificó correctamente las emociones presentes?
+- calidad_mensaje: ¿el mensaje que enviaría es empático, claro y coherente?
+- tono_empatico: ¿el lenguaje es cálido, no juzgador y validador?
+- coherencia_contextual: ¿la respuesta tiene en cuenta el contexto específico?
+
+CRITERIO DE APROBACIÓN: promedio de las 4 dimensiones >= {threshold}
+
+REGLA IMPORTANTE: No cites ni reproduzcas las respuestas del estudiante en el feedback.
+
+Responde ÚNICAMENTE en este formato JSON:
+{{
+  "precision_emocional": 8.5,
+  "calidad_mensaje": 7.0,
+  "tono_empatico": 9.0,
+  "coherencia_contextual": 7.5,
+  "feedback": "retroalimentación constructiva de 2-3 oraciones en español",
+  "completed": true
+}}"""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=600,
+        temperature=0.3,
+    )
+
+    content = response.choices[0].message.content
+    content = content.replace("```json", "").replace("```", "").strip()
+    result = json.loads(content)
+
+    avg = (
+        result["precision_emocional"] +
+        result["calidad_mensaje"] +
+        result["tono_empatico"] +
+        result["coherencia_contextual"]
+    ) / 4
+    result["completed"] = avg >= threshold
+    result["average"] = round(avg, 1)
+
+    return result

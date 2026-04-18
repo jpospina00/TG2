@@ -13,7 +13,7 @@ import {
   FiCheckCircle,
   FiMessageCircle,
   FiUsers,
-  FiEdit3
+  FiEdit3,
 } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Diagnostic.css";
@@ -45,7 +45,10 @@ function Diagnostic() {
   const [error, setError] = useState(null);
 
   const moduleName = moduleId === "1" ? "empathy" : "networking";
-  const moduleLabel = moduleName === "empathy" ? "Comunicación Empática" : "Networking Profesional";
+  const moduleLabel =
+    moduleName === "empathy"
+      ? "Comunicación Empática"
+      : "Networking Profesional";
   const MAX_CHARS = 500;
 
   useEffect(() => {
@@ -59,17 +62,23 @@ function Diagnostic() {
       setUserId(userRes.data.id);
 
       const diagRes = await axios.get(
-        `${API_URL}/diagnostic/user/${userRes.data.id}/module/${moduleId}`
+        `${API_URL}/diagnostic/user/${userRes.data.id}/module/${moduleId}`,
       );
 
       if (diagRes.data.has_diagnostic) {
         // Ya tiene diagnóstico — ir directo al módulo
-        navigate(`/module/${moduleId}`);
+        if (moduleId === "1") {
+          navigate(`/empathy/${moduleId}`);
+        } else {
+          navigate(`/module/${moduleId}`);
+        }
         return;
       }
 
       // Cargar preguntas
-      const qRes = await axios.get(`${API_URL}/diagnostic/questions/${moduleName}`);
+      const qRes = await axios.get(
+        `${API_URL}/diagnostic/questions/${moduleName}`,
+      );
       setQuestions(qRes.data.questions);
       setScenario(qRes.data.scenario);
       setStep(STEPS.INTRO);
@@ -145,7 +154,10 @@ function Diagnostic() {
     return (
       <div className="diag-wrap">
         <nav className="diag-navbar">
-          <button className="diag-back-btn" onClick={() => navigate("/dashboard")}>
+          <button
+            className="diag-back-btn"
+            onClick={() => navigate("/dashboard")}
+          >
             <FiArrowLeft size={16} />
             Volver
           </button>
@@ -155,20 +167,20 @@ function Diagnostic() {
         <div className="diag-content">
           <div className="diag-intro-card">
             <div
-  className="diag-intro-icon"
-  style={{
-    background:
-      moduleName === "empathy"
-        ? "rgba(37,99,235,0.15)"
-        : "rgba(14,165,233,0.15)",
-  }}
->
-  {moduleName === "empathy" ? (
-    <FiMessageCircle size={32} color="#2563EB" />
-  ) : (
-    <FiUsers size={32} color="#0EA5E9" />
-  )}
-</div>
+              className="diag-intro-icon"
+              style={{
+                background:
+                  moduleName === "empathy"
+                    ? "rgba(37,99,235,0.15)"
+                    : "rgba(14,165,233,0.15)",
+              }}
+            >
+              {moduleName === "empathy" ? (
+                <FiMessageCircle size={32} color="#2563EB" />
+              ) : (
+                <FiUsers size={32} color="#0EA5E9" />
+              )}
+            </div>
             <h1 className="diag-intro-title">Diagnóstico de {moduleLabel}</h1>
             <p className="diag-intro-desc">
               Antes de comenzar a practicar, evaluaremos tu nivel actual para
@@ -179,8 +191,12 @@ function Diagnostic() {
               <div className="diag-intro-step">
                 <div className="diag-step-num">1</div>
                 <div>
-                  <p className="diag-step-title">3 preguntas de opción múltiple</p>
-                  <p className="diag-step-desc">Situaciones comunicativas reales</p>
+                  <p className="diag-step-title">
+                    3 preguntas de opción múltiple
+                  </p>
+                  <p className="diag-step-desc">
+                    Situaciones comunicativas reales
+                  </p>
                 </div>
               </div>
               <div className="diag-intro-step">
@@ -198,8 +214,17 @@ function Diagnostic() {
                 </div>
               </div>
             </div>
-            {error && <ErrorMessage title="Error de carga" message={error} onRetry={loadDiagnostic} />}
-            <button className="diag-start-btn" onClick={() => setStep(STEPS.QUESTIONS)}>
+            {error && (
+              <ErrorMessage
+                title="Error de carga"
+                message={error}
+                onRetry={loadDiagnostic}
+              />
+            )}
+            <button
+              className="diag-start-btn"
+              onClick={() => setStep(STEPS.QUESTIONS)}
+            >
               Comenzar diagnóstico
               <FiArrowRight size={16} />
             </button>
@@ -218,11 +243,20 @@ function Diagnostic() {
     return (
       <div className="diag-wrap">
         <nav className="diag-navbar">
-          <button className="diag-back-btn" onClick={() => currentQuestion > 0 ? setCurrentQuestion(c => c - 1) : setStep(STEPS.INTRO)}>
+          <button
+            className="diag-back-btn"
+            onClick={() =>
+              currentQuestion > 0
+                ? setCurrentQuestion((c) => c - 1)
+                : setStep(STEPS.INTRO)
+            }
+          >
             <FiArrowLeft size={16} />
             Atrás
           </button>
-          <span className="diag-navbar-title">Pregunta {currentQuestion + 1} de {questions.length}</span>
+          <span className="diag-navbar-title">
+            Pregunta {currentQuestion + 1} de {questions.length}
+          </span>
           <div style={{ width: 60 }} />
         </nav>
 
@@ -230,7 +264,9 @@ function Diagnostic() {
         <div className="diag-progress-bar-wrap">
           <div
             className="diag-progress-bar-fill"
-            style={{ width: `${((currentQuestion + 1) / questions.length) * 50}%` }}
+            style={{
+              width: `${((currentQuestion + 1) / questions.length) * 50}%`,
+            }}
           />
         </div>
 
@@ -266,7 +302,7 @@ function Diagnostic() {
             ) : (
               <button
                 className="diag-next-btn"
-                onClick={() => setCurrentQuestion(c => c + 1)}
+                onClick={() => setCurrentQuestion((c) => c + 1)}
                 disabled={!answers[q.id]}
               >
                 Siguiente pregunta
@@ -286,7 +322,10 @@ function Diagnostic() {
     return (
       <div className="diag-wrap">
         <nav className="diag-navbar">
-          <button className="diag-back-btn" onClick={() => setStep(STEPS.QUESTIONS)}>
+          <button
+            className="diag-back-btn"
+            onClick={() => setStep(STEPS.QUESTIONS)}
+          >
             <FiArrowLeft size={16} />
             Atrás
           </button>
@@ -321,25 +360,36 @@ function Diagnostic() {
               </div>
               <div className="diag-scenario-message">
                 <p className="diag-message-label">Mensaje</p>
-                <p className="diag-message-text">"{scenario.opening_message}"</p>
+                <p className="diag-message-text">
+                  "{scenario.opening_message}"
+                </p>
               </div>
             </div>
           )}
 
           <div className="diag-write-section">
             <div className="diag-char-counter">
-              <span style={{ color: charColor }}>{writtenResponse.length}</span> / {MAX_CHARS}
+              <span style={{ color: charColor }}>{writtenResponse.length}</span>{" "}
+              / {MAX_CHARS}
             </div>
             <textarea
               className="diag-textarea"
-              placeholder={moduleName === "empathy"
-                ? "Escribe tu respuesta empática aquí..."
-                : "Escribe tu mensaje de networking aquí..."}
+              placeholder={
+                moduleName === "empathy"
+                  ? "Escribe tu respuesta empática aquí..."
+                  : "Escribe tu mensaje de networking aquí..."
+              }
               maxLength={MAX_CHARS}
               value={writtenResponse}
               onChange={(e) => setWrittenResponse(e.target.value)}
             />
-            {error && <ErrorMessage title="Error" message={error} onRetry={() => setError(null)} />}
+            {error && (
+              <ErrorMessage
+                title="Error"
+                message={error}
+                onRetry={() => setError(null)}
+              />
+            )}
             <button
               className="diag-next-btn"
               onClick={handleSubmit}
@@ -360,7 +410,9 @@ function Diagnostic() {
       <div className="diag-loading">
         <div className="diag-spinner" />
         <p>Analizando tu diagnóstico...</p>
-        <p className="diag-loading-sub">La IA está generando tus retos personalizados</p>
+        <p className="diag-loading-sub">
+          La IA está generando tus retos personalizados
+        </p>
       </div>
     );
   }
@@ -379,7 +431,13 @@ function Diagnostic() {
 
         <div className="diag-content">
           <div className="diag-result-card">
-            <div className="diag-result-icon" style={{ background: levelColor + "20", borderColor: levelColor + "40" }}>
+            <div
+              className="diag-result-icon"
+              style={{
+                background: levelColor + "20",
+                borderColor: levelColor + "40",
+              }}
+            >
               <FiCheckCircle size={36} color={levelColor} />
             </div>
 
@@ -390,12 +448,15 @@ function Diagnostic() {
             <p className="diag-result-module">Módulo de {moduleLabel}</p>
             <p className="diag-result-desc">
               Basándose en tu desempeño, la IA ha asignado este nivel de entrada
-              y generado {result.challenges_generated} retos personalizados para ti.
+              y generado {result.challenges_generated} retos personalizados para
+              ti.
             </p>
 
             <div className="diag-result-sections">
               <div className="diag-result-section section-ok">
-                <p className="diag-result-section-label">Fortalezas detectadas</p>
+                <p className="diag-result-section-label">
+                  Fortalezas detectadas
+                </p>
                 <p className="diag-result-section-text">{result.strengths}</p>
               </div>
               <div className="diag-result-section section-improve">
@@ -403,14 +464,22 @@ function Diagnostic() {
                 <p className="diag-result-section-text">{result.weaknesses}</p>
               </div>
               <div className="diag-result-section section-feedback">
-                <p className="diag-result-section-label">Retroalimentación general</p>
-                <p className="diag-result-section-text">{result.written_feedback}</p>
+                <p className="diag-result-section-label">
+                  Retroalimentación general
+                </p>
+                <p className="diag-result-section-text">
+                  {result.written_feedback}
+                </p>
               </div>
             </div>
 
             <button
               className="diag-start-btn"
-              onClick={() => navigate(`/module/${moduleId}`)}
+              onClick={() =>
+                moduleId === "1"
+                  ? navigate(`/empathy/${moduleId}`)
+                  : navigate(`/module/${moduleId}`)
+              }
             >
               Ver mis retos personalizados
               <FiArrowRight size={16} />

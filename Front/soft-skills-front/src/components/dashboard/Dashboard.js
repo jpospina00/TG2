@@ -56,7 +56,6 @@ function Dashboard() {
       try {
         const res = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
         dbUser = res.data;
-        
       } catch {
         const res = await axios.post(`${API_URL}/users`, {
           auth0_id: user.sub,
@@ -67,12 +66,12 @@ function Dashboard() {
       }
       setUserData(dbUser);
       const profileRes = await axios.get(
-          `${API_URL}/students/profile/user/${dbUser.id}`,
-        );
-        if (!profileRes.data.has_profile) {
-          navigate("/onboarding");
-          return;
-        }
+        `${API_URL}/students/profile/user/${dbUser.id}`,
+      );
+      if (!profileRes.data.has_profile) {
+        navigate("/onboarding");
+        return;
+      }
       const modsRes = await axios.get(`${API_URL}/modules`);
       setModules(modsRes.data);
 
@@ -290,7 +289,13 @@ function Dashboard() {
               <div
                 key={mod.id}
                 className="db-module-card"
-                onClick={() => navigate(`/module/${mod.id}`)}
+                onClick={() => {
+                  if (mod.name === "empathy") {
+                    navigate(`/empathy/${mod.id}`);
+                  } else {
+                    navigate(`/module/${mod.id}`);
+                  }
+                }}
               >
                 <div
                   className={`db-module-icon ${isEmpathy ? "icon-blue" : "icon-cyan"}`}
@@ -317,6 +322,14 @@ function Dashboard() {
                 </div>
                 <button
                   className={`db-continue-btn ${isEmpathy ? "" : "btn-cyan"}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (mod.name === "empathy") {
+                      navigate(`/empathy/${mod.id}`);
+                    } else {
+                      navigate(`/module/${mod.id}`);
+                    }
+                  }}
                 >
                   Continuar
                 </button>
@@ -440,7 +453,14 @@ function Dashboard() {
                     </p>
                     <div className="db-historial-feedback">
                       <p className="db-historial-feedback-text">
-                        {item.feedback?.content}
+                        {(() => {
+                          try {
+                            const parsed = JSON.parse(item.feedback?.content);
+                            return parsed.feedback || item.feedback?.content;
+                          } catch {
+                            return item.feedback?.content;
+                          }
+                        })()}
                       </p>
                     </div>
                   </div>

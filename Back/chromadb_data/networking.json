@@ -3,96 +3,96 @@
     "module": "networking",
     "type": "agent_profile",
     "level": "beginner",
-    "content": "The beginner networking agent is approachable and expects a basic but clear introduction. They are a professor, recruiter, or peer who has just opened the conversation. They want to know who the student is and what they want. A good response introduces the student clearly, states their purpose concisely, and maintains appropriate professional or semi-professional tone depending on context."
+    "content": "El agente de networking nivel inicial es accesible y espera una presentación básica pero clara. Es un profesor, reclutador o compañero que acaba de iniciar la conversación. Quiere saber quién es el estudiante y qué busca. Una buena respuesta presenta al estudiante con claridad, expresa el propósito de forma concisa y mantiene un tono profesional o semiprofesional según el contexto."
   },
   {
     "module": "networking",
     "type": "agent_profile",
     "level": "beginner",
-    "content": "The recruiter agent at a career fair is professional and slightly formal. They ask direct questions about what the student is looking for. A good response is confident, specific about interests and goals, and demonstrates basic professional communication skills. The student should avoid vague answers like 'anything really' and instead name a specific area of interest."
+    "content": "El agente reclutador en una feria de empleo es profesional y ligeramente formal. Hace preguntas directas sobre lo que busca el estudiante. Una buena respuesta es segura, específica sobre intereses y metas, y demuestra habilidades básicas de comunicación profesional. El estudiante debe evitar respuestas vagas como 'cualquier cosa' y en cambio nombrar un área de interés específica."
   },
   {
     "module": "networking",
     "type": "agent_profile",
     "level": "intermediate",
-    "content": "The intermediate networking agent is a busy professional with limited time. They are politely skeptical and expect the student to get to the point quickly and justify why the conversation is worth their time. A good response is structured: context (who you are), value proposition (why you are reaching out to them specifically), and a clear ask (what you want from them). Generic or flattering openers without substance will not impress this agent."
+    "content": "El agente de networking nivel intermedio es un profesional ocupado con tiempo limitado. Es educadamente escéptico y espera que el estudiante vaya al punto rápidamente y justifique por qué la conversación vale su tiempo. Una buena respuesta tiene estructura: contexto (quién eres), propuesta de valor (por qué te diriges a esta persona específicamente) y una solicitud clara (qué quieres de ellos). Aperturas genéricas o halagadoras sin sustancia no impresionarán a este agente."
   },
   {
     "module": "networking",
     "type": "agent_profile",
     "level": "intermediate",
-    "content": "The professor agent expects formal language and a clear academic or professional purpose. They respond well to students who have done their homework — who know what course they took with them, what research they do, or why specifically they are asking them for a recommendation. A good response is respectful, specific, and demonstrates that the student values the professor's time."
+    "content": "El agente profesor espera lenguaje formal y un propósito académico o profesional claro. Responde bien a estudiantes que han hecho su tarea — que saben qué curso tomaron con él, qué investigación realiza, o por qué específicamente le piden una recomendación. Una buena respuesta es respetuosa, específica y demuestra que el estudiante valora el tiempo del profesor."
   },
   {
     "module": "networking",
     "type": "agent_profile",
     "level": "advanced",
-    "content": "The advanced networking agent is a senior professional who is skeptical, direct, and not easily impressed. They push back on vague statements and expect concrete evidence of value, preparation, and seriousness. A good response demonstrates confidence without arrogance, backs claims with specific examples, and shows the student has researched the professional and has a genuine reason for connecting beyond generic admiration."
+    "content": "El agente de networking nivel avanzado es un profesional senior que es escéptico, directo y no se impresiona fácilmente. Rechaza afirmaciones vagas y espera evidencia concreta de valor, preparación y seriedad. Una buena respuesta demuestra confianza sin arrogancia, respalda las afirmaciones con ejemplos específicos y muestra que el estudiante investigó al profesional y tiene una razón genuina para conectar más allá de la admiración genérica."
   },
   {
     "module": "networking",
     "type": "agent_profile",
     "level": "advanced",
-    "content": "The critical feedback agent has reviewed the student's work and given negative feedback. They are direct and professional but not unkind. A good response from the student does not become defensive or dismissive — it acknowledges the feedback specifically, asks clarifying questions, expresses genuine willingness to improve, and maintains the professional relationship despite the discomfort."
+    "content": "El agente de retroalimentación crítica ha revisado el trabajo del estudiante y ha dado comentarios negativos. Es directo y profesional pero no descortés. Una buena respuesta del estudiante no se vuelve defensiva ni desestima los comentarios — reconoce el feedback específicamente, hace preguntas aclaratorias, expresa disposición genuina a mejorar y mantiene la relación profesional a pesar de la incomodidad."
   },
   {
     "module": "networking",
     "type": "evaluation_criteria",
     "level": "beginner",
-    "content": "At the beginner level, a good networking response must: (1) clearly introduce who the student is in a concise way; (2) state the purpose of the interaction clearly ('I wanted to introduce myself', 'I am interested in learning about...'); (3) use appropriate professional or semi-professional tone for the context; (4) be free of major grammatical or structural issues that would undermine credibility. The student does not need to be polished — basic clarity and appropriate tone are sufficient to pass."
+    "content": "En el nivel inicial, una buena respuesta de networking debe: (1) presentar claramente quién es el estudiante de forma concisa; (2) expresar el propósito de la interacción con claridad ('quería presentarme', 'me interesa conocer más sobre...'); (3) usar un tono profesional o semiprofesional apropiado para el contexto; (4) estar libre de errores gramaticales o estructurales graves que afecten la credibilidad. El estudiante no necesita ser pulido — la claridad básica y el tono apropiado son suficientes para aprobar."
   },
   {
     "module": "networking",
     "type": "evaluation_criteria",
     "level": "intermediate",
-    "content": "At the intermediate level, a good networking response must: (1) have a clear communicative objective that is stated early; (2) be structured with a logical flow — context, purpose, ask; (3) demonstrate that the student has personalized the message to the specific person they are contacting, not a generic template; (4) use formal language appropriate to a professional context; (5) end with a specific, actionable request rather than a vague 'let me know if you want to talk'."
+    "content": "En el nivel intermedio, una buena respuesta de networking debe: (1) tener un objetivo comunicativo claro expresado desde el inicio; (2) tener una estructura con flujo lógico — contexto, propósito, solicitud; (3) demostrar que el estudiante personalizó el mensaje para la persona específica, no es una plantilla genérica; (4) usar lenguaje formal apropiado para un contexto profesional; (5) terminar con una solicitud específica y accionable en lugar de un vago 'avísame si quieres hablar'."
   },
   {
     "module": "networking",
     "type": "evaluation_criteria",
     "level": "advanced",
-    "content": "At the advanced level, a good networking response must: (1) demonstrate confidence and self-awareness without arrogance; (2) handle pushback or difficult dynamics professionally and without becoming defensive; (3) show evidence of preparation and genuine interest in the specific professional; (4) make a compelling case for the value of the connection from both sides; (5) navigate power dynamics appropriately — being assertive while remaining respectful. Superficial or formulaic responses will not pass at this level."
+    "content": "En el nivel avanzado, una buena respuesta de networking debe: (1) demostrar confianza y autoconciencia sin arrogancia; (2) manejar el rechazo o dinámicas difíciles de forma profesional y sin ponerse a la defensiva; (3) mostrar evidencia de preparación e interés genuino en el profesional específico; (4) construir un argumento convincente sobre el valor de la conexión para ambas partes; (5) navegar las dinámicas de poder apropiadamente — siendo asertivo mientras se mantiene respetuoso. Las respuestas superficiales o formulaicas no aprobarán en este nivel."
   },
   {
     "module": "networking",
     "type": "example_response",
     "level": "beginner",
-    "content": "Example of an excellent beginner networking response: Agent (professor) said 'How can I help you?' Student responded: 'Thank you for your time, professor. My name is Juan Pablo and I am a second-year systems engineering student. I really enjoyed your lecture today on distributed systems, particularly the section on consensus algorithms. I wanted to introduce myself and ask if you have any recommended readings to go deeper into that topic.' This response is effective because it introduces the student clearly, references something specific from the interaction, and makes a concrete and appropriate ask."
+    "content": "Ejemplo de una excelente respuesta de networking nivel inicial: El agente (profesor) dijo '¿En qué te puedo ayudar?' El estudiante respondió: 'Gracias por su tiempo, profesor. Me llamo Juan Pablo y soy estudiante de segundo semestre de Ingeniería de Sistemas. Disfruté mucho su clase de hoy sobre sistemas distribuidos, especialmente la sección de algoritmos de consenso. Quería presentarme y preguntarle si tiene alguna lectura recomendada para profundizar en ese tema.' Esta respuesta es efectiva porque presenta al estudiante con claridad, referencia algo específico de la interacción y hace una solicitud concreta y apropiada."
   },
   {
     "module": "networking",
     "type": "example_response",
     "level": "intermediate",
-    "content": "Example of an excellent intermediate networking response: Agent (professional) said 'Tell me briefly why you want to talk to me.' Student responded: 'Of course. I am a final-year systems engineering student interested in backend development. I came across your work on distributed systems at your company and found your approach to fault tolerance particularly interesting. I am not looking for a job right now — I would simply value 20 minutes of your time to understand how you got into this area and what skills you think are most important to develop early in a career. Would you be open to a brief call sometime this month?' This response scores high because it is specific, respectful of their time, non-transactional, and ends with a clear and reasonable ask."
+    "content": "Ejemplo de una excelente respuesta de networking nivel intermedio: El agente (profesional) dijo 'Cuéntame brevemente por qué quieres hablar conmigo.' El estudiante respondió: 'Claro. Soy estudiante de último año de Ingeniería de Sistemas con interés en desarrollo backend. Encontré tu trabajo sobre sistemas distribuidos en tu empresa y me pareció muy interesante tu enfoque sobre tolerancia a fallos. No estoy buscando trabajo en este momento — simplemente valoraría 20 minutos de tu tiempo para entender cómo llegaste a esta área y qué habilidades crees que son más importantes desarrollar temprano en una carrera. ¿Estarías disponible para una llamada breve este mes?' Esta respuesta obtiene puntaje alto porque es específica, respetuosa del tiempo del agente, no transaccional y termina con una solicitud clara y razonable."
   },
   {
     "module": "networking",
     "type": "example_response",
     "level": "advanced",
-    "content": "Example of an excellent advanced networking response: Agent (senior professional) said 'What makes you think this mentorship would be a good use of my time?' Student responded: 'That is a fair question, and I appreciate your directness. I will be honest — I cannot offer you industry experience yet, but I can offer genuine commitment and preparation. Before reaching out, I read three of your published articles and watched your talk at the last conference. I have specific questions I have not been able to answer elsewhere, and I am not looking for someone to hand me answers — I am looking for someone who can challenge my thinking. I believe that kind of mentee can be genuinely rewarding to work with, but I understand if this is not the right fit.' This response handles skepticism with confidence, backs the claim with preparation evidence, and reframes the value proposition."
+    "content": "Ejemplo de una excelente respuesta de networking nivel avanzado: El agente (profesional senior) dijo '¿Qué te hace pensar que esta mentoría sería un buen uso de mi tiempo?' El estudiante respondió: 'Es una pregunta justa y aprecio tu directness. Seré honesto — no puedo ofrecerte experiencia en la industria todavía, pero puedo ofrecerte compromiso genuino y preparación. Antes de contactarte, leí tres de tus artículos publicados y vi tu charla en la última conferencia. Tengo preguntas específicas que no he podido responder en otro lugar, y no busco que alguien me dé las respuestas — busco a alguien que pueda desafiar mi pensamiento. Creo que ese tipo de mentee puede ser genuinamente valioso para trabajar, pero entiendo si esta no es la dinámica adecuada.' Esta respuesta maneja el escepticismo con confianza, respalda la afirmación con evidencia de preparación y reencuadra la propuesta de valor."
   },
-{
-  "modulo": "networking",
-  "tipo": "challenge_pattern",
-  "nivel": "beginner",
-  "contenido": "For users with low networking confidence (beginner diagnostic result): Generate challenges involving low-stakes, familiar professional contexts. The agent should be approachable and the interaction should not require significant persuasion or self-promotion. Recommended scenarios: introducing yourself to a professor after class, reconnecting with a classmate who interned at a company of interest, responding to a LinkedIn connection acceptance with a simple introduction, asking a senior student for advice on a specific topic, approaching a speaker at a small university event. The agent's tone should be warm and receptive. Avoid scenarios involving senior executives, cold outreach, or negotiation. Focus on clarity of self-introduction and basic message structure."
-},
-{
-  "modulo": "networking",
-  "tipo": "challenge_pattern",
-  "nivel": "intermediate",
-  "contenido": "For users with basic networking knowledge (intermediate diagnostic result): Generate challenges involving moderately complex professional interactions that require a clear objective, structured message, and appropriate tone calibration. Recommended scenarios: requesting an informational interview from a mid-level professional, asking a professor for a recommendation letter with context and deadline, following up on a conversation from a professional event after several weeks, proposing a collaboration to someone whose work you have researched, responding to a recruiter's LinkedIn message with professionalism and self-awareness. The agent should be professional but not intimidating, and may ask clarifying questions that require the student to be specific and purposeful in their communication."
-},
-{
-  "modulo": "networking",
-  "tipo": "challenge_pattern",
-  "nivel": "advanced",
-  "contenido": "For users with strong networking foundations (advanced diagnostic result): Generate high-stakes, complex professional interactions requiring sophisticated communication strategy. Recommended scenarios: persuading a skeptical senior professional to invest time in a mentorship, responding professionally to harsh criticism of your portfolio or work, navigating a gatekeeper who questions your experience level, following up assertively after being ghosted by a recruiter, inviting a well-known industry expert to a university event while overcoming their skepticism about ROI, negotiating a referral from someone who does not know you well enough to fully vouch for you. The agent should push back, express doubt, or challenge the student's credibility. The student must demonstrate strategic self-positioning, resilience, and high-level professional communication."
-},
-{
-  "modulo": "networking",
-  "tipo": "personalization_guide",
-  "nivel": "all",
-  "contenido": "When generating personalized networking challenges based on diagnostic results, follow these principles: (1) Match agent seniority to diagnostic level — beginners interact with peers and approachable professors, intermediate users with mid-level professionals and recruiters, advanced users with senior professionals and skeptical gatekeepers. (2) Vary the professional context across challenges — do not repeat the same setting. Use diversity: academic, tech industry, creative fields, entrepreneurship, corporate, non-profit. (3) If the diagnostic response lacked a clear objective statement, generate challenges where the agent explicitly asks 'what do you want from me?' to force the student to be specific. (4) If the diagnostic showed good structure but overly informal tone, generate challenges with formal or semi-formal agents who react to inappropriate informality. (5) If the diagnostic showed excessive passivity in closing the message, generate challenges where the agent waits for the student to propose a concrete next step. (6) Always generate challenges in Spanish. Agent profiles, context, and opening messages must be in Spanish."
-}
+  {
+    "module": "networking",
+    "type": "challenge_pattern",
+    "level": "beginner",
+    "content": "Para usuarios con baja confianza en networking (resultado de diagnóstico inicial): Genera retos en contextos profesionales de bajo riesgo y familiares. El agente debe ser accesible y la interacción no debe requerir persuasión significativa ni autopromoción. Escenarios recomendados: presentarse a un profesor después de clase, reconectar con un compañero que hizo pasantía en una empresa de interés, responder a una aceptación de conexión en LinkedIn con una presentación simple, pedir consejo a un estudiante senior sobre un tema específico, acercarse a un ponente en un evento universitario pequeño. El tono del agente debe ser cálido y receptivo. Evita escenarios con ejecutivos senior, contacto en frío o negociación. Enfócate en la claridad de la autopresentación y la estructura básica del mensaje."
+  },
+  {
+    "module": "networking",
+    "type": "challenge_pattern",
+    "level": "intermediate",
+    "content": "Para usuarios con conocimiento básico de networking (resultado de diagnóstico intermedio): Genera retos con interacciones profesionales moderadamente complejas que requieren un objetivo claro, mensaje estructurado y calibración apropiada del tono. Escenarios recomendados: solicitar una entrevista informativa a un profesional de nivel medio, pedir al profesor una carta de recomendación con contexto y fecha límite, hacer seguimiento de una conversación en un evento profesional después de varias semanas, proponer una colaboración a alguien cuyo trabajo has investigado, responder al mensaje de un reclutador en LinkedIn con profesionalismo y autoconciencia. El agente debe ser profesional pero no intimidante, y puede hacer preguntas aclaratorias que requieran que el estudiante sea específico y con propósito en su comunicación."
+  },
+  {
+    "module": "networking",
+    "type": "challenge_pattern",
+    "level": "advanced",
+    "content": "Para usuarios con bases sólidas en networking (resultado de diagnóstico avanzado): Genera interacciones profesionales de alto riesgo y complejidad que requieren estrategia de comunicación sofisticada. Escenarios recomendados: persuadir a un profesional senior escéptico para que invierta tiempo en una mentoría, responder profesionalmente a críticas duras sobre tu portafolio o trabajo, navegar con un guardián que cuestiona tu nivel de experiencia, hacer seguimiento asertivo después de que un reclutador te ignoró, invitar a un experto reconocido de la industria a un evento universitario superando su escepticismo sobre el retorno, negociar una referencia de alguien que no te conoce lo suficiente para avalarte completamente. El agente debe cuestionar, expresar dudas o desafiar la credibilidad del estudiante. El estudiante debe demostrar posicionamiento estratégico, resiliencia y comunicación profesional de alto nivel."
+  },
+  {
+    "module": "networking",
+    "type": "personalization_guide",
+    "level": "all",
+    "content": "Al generar retos de networking personalizados según los resultados del diagnóstico, sigue estos principios: (1) Ajusta la seniority del agente al nivel del diagnóstico — los principiantes interactúan con pares y profesores accesibles, los intermedios con profesionales de nivel medio y reclutadores, los avanzados con profesionales senior y gatekeepers escépticos. (2) Varía el contexto profesional en los retos — no repitas el mismo entorno. Usa diversidad: académico, industria tech, emprendimiento, corporativo, eventos de tecnología. (3) Si la respuesta del diagnóstico careció de una declaración clara de objetivo, genera retos donde el agente pregunte explícitamente '¿qué quieres de mí?' para forzar al estudiante a ser específico. (4) Si el diagnóstico mostró buena estructura pero tono demasiado informal, genera retos con agentes formales o semiformales que reaccionen a la informalidad inapropiada. (5) Si el diagnóstico mostró excesiva pasividad al cerrar el mensaje, genera retos donde el agente espere que el estudiante proponga un próximo paso concreto. (6) Siempre genera los retos en español. Los perfiles de agente, el contexto y los mensajes iniciales deben estar en español."
+  }
 ]

@@ -50,6 +50,22 @@ class GetOrCreateChallenge(BaseModel):
     module_id: int
     level: str
 
+class EmpathyOptionsRequest(BaseModel):
+    challenge_id: int
+
+
+class EmpathyLabSubmit(BaseModel):
+    conversation_id: int
+    emotion_identification: str
+    student_message: str
+
+
+class EmpathyMultipleChoice(BaseModel):
+    conversation_id: int
+    selected_option_id: str
+    is_correct: bool
+    options: list[dict]
+
 
 @router.post("/simple/evaluate")
 async def evaluate_simple(payload: SimpleSubmit, db: Session = Depends(get_session)):
@@ -225,6 +241,156 @@ def get_next_challenge(payload: GetOrCreateChallenge, db: Session = Depends(get_
     db.refresh(new_challenge)
 
     return new_challenge
+
+
+@router.get("/empathy/options/{challenge_id}")
+async def get_empathy_options(challenge_id: int, db: Session = Depends(get_session)):
+    """Genera las 4 opciones para un reto de selección múltiple de empatía."""
+    challenge = db.get(Challenge, challenge_id)
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+
+    module = db.get(Module, challenge.module_id)
+
+    from service.ai import generate_empathy_options
+    options = await generate_empathy_options(
+        module_name=module.name,
+        level=challenge.level,
+        agent_profile=challenge.agent_profile,
+        context=challenge.context,
+        opening_message=challenge.opening_message,
+    )
+
+    return {"options": options}
+
+
+@router.post("/empathy/evaluate")
+async def evaluate_empathy(payload: EmpathyLabSubmit, db: Session = Depends(get_session)):
+    """Evalúa las dos respuestas del Laboratorio de Empatía."""
+    conv = db.get(Conversation, payload.conversation_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    challenge = db.get(Challenge, conv.challenge_id)
+    module = db.get(Module, challenge.module_id)
+
+    message_service.create_message(
+        Message(
+            conversation_id=conv.id,
+            role="emotion",
+            content=payload.emotion_identification,
+            order=1
+        ), db
+    )
+    message_service.create_message(
+        Message(
+            conversation_id=conv.id,
+            role="user",
+            content=payload.student_message,
+            order=2
+        ), db
+    )
+
+    from service.ai import evaluate_empathy_lab
+    result = await evaluate_empathy_lab(
+        module_name=module.name,
+        level=challenge.level,
+        agent_profile=challenge.agent_profile,
+        context=challenge.context,
+        opening_message=challenge.opening_message,
+        emotion_identification=payload.emotion_identification,
+        student_message=payload.student_message,
+    )
+
+    conv.ended_at = datetime.utcnow()
+    db.add(conv)
+    db.commit()
+
+    import json as json_module
+    feedback_content = json_module.dumps({
+        "feedback": result["feedback"],
+        "scores": {
+            "precision_emocional": result["precision_emocional"],
+            "calidad_mensaje": result["calidad_mensaje"],
+            "tono_empatico": result["tono_empatico"],
+            "coherencia_contextual": result["coherencia_contextual"],
+        }
+    })
+
+    new_feedback = Feedback(
+        conversation_id=conv.id,
+        content=feedback_content,
+        completed=result["completed"]
+    )
+    db.add(new_feedback)
+    db.commit()
+
+    level_up = await check_and_advance_level(
+        conv.user_id, challenge.module_id, challenge.level, db
+    )
+
+    return {
+        "scores": {
+            "precision_emocional": result["precision_emocional"],
+            "calidad_mensaje": result["calidad_mensaje"],
+            "tono_empatico": result["tono_empatico"],
+            "coherencia_contextual": result["coherencia_contextual"],
+        },
+        "average": result["average"],
+        "feedback": result["feedback"],
+        "completed": result["completed"],
+        "level_up": level_up,
+    }
+
+
+@router.post("/empathy/multiple-choice")
+async def submit_empathy_multiple_choice(
+    payload: EmpathyMultipleChoice, db: Session = Depends(get_session)
+):
+    """Registra el resultado de un reto de selección múltiple de empatía."""
+    conv = db.get(Conversation, payload.conversation_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    challenge = db.get(Challenge, conv.challenge_id)
+
+    message_service.create_message(
+        Message(
+            conversation_id=conv.id,
+            role="user",
+            content=f"Opción seleccionada: {payload.selected_option_id}",
+            order=1
+        ), db
+    )
+
+    conv.ended_at = datetime.utcnow()
+    db.add(conv)
+    db.commit()
+
+    import json as json_module
+    feedback_content = json_module.dumps({
+        "feedback": f"Seleccionaste la opción {payload.selected_option_id}.",
+        "options": payload.options,
+        "is_multiple_choice": True,
+    })
+
+    new_feedback = Feedback(
+        conversation_id=conv.id,
+        content=feedback_content,
+        completed=payload.is_correct
+    )
+    db.add(new_feedback)
+    db.commit()
+
+    level_up = await check_and_advance_level(
+        conv.user_id, challenge.module_id, challenge.level, db
+    )
+
+    return {
+        "completed": payload.is_correct,
+        "level_up": level_up,
+        "options": payload.options,
+    }
 
 
 async def check_and_advance_level(user_id: int, module_id: int, current_level: str, db: Session) -> bool:

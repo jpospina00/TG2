@@ -1,0 +1,7 @@
+venv
+__pycache__
+*.pyc
+.env
+db/tesis.db
+chromadb_data/chroma_db
+.git

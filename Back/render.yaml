@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: tesis-backend
+    runtime: docker
+    dockerfilePath: ./Back/Dockerfile
+    dockerContext: ./Back
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_sRBp3Tqao0we@ep-raspy-rain-aiij2he0-pooler.c-4.us-east-1.aws.neon.tech/tg2?sslmode=require&channel_binding=require
+      - key: GROQ_API_KEYS
+        sync: false

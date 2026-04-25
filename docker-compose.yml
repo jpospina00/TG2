@@ -1,0 +1,72 @@
+# docker-compose.yml
+# Propósito: Levantar backend, frontend y PostgreSQL para desarrollo local
+# Uso: docker-compose up --build
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: tesis_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tesis
+      POSTGRES_USER: tesis_user
+      POSTGRES_PASSWORD: tesis_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tesis_user -d tesis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./Back
+      dockerfile: Dockerfile
+    container_name: tesis_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://tesis_user:tesis_pass@db:5432/tesis
+      - GROQ_API_KEYS=${GROQ_API_KEYS}
+    env_file:
+      - ./Back/.env
+    volumes:
+      - ./Back:/app
+      - chroma_data:/app/chromadb_data/chroma_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./Front/soft-skills-front
+      dockerfile: Dockerfile
+    container_name: tesis_frontend
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "3000:3000"
+    environment:
+      - CI=false
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN}
+      - REACT_APP_AUTH0_CLIENT_ID=${REACT_APP_AUTH0_CLIENT_ID}
+      - REACT_APP_API_URL=http://localhost:8000
+    env_file:
+      - ./Front/soft-skills-front/.env
+    volumes:
+      - ./Front/soft-skills-front:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  chroma_data:

@@ -76,36 +76,40 @@ SPECIALIZATION_LABELS = {
 
 # ── Fallback entre múltiples API keys ─────────────────────────────────────────
 
+_groq_client = None
+
 def get_groq_client() -> Groq:
+    global _groq_client
+    if _groq_client is not None:
+        return _groq_client
+
     keys = settings.groq_keys_list
     if not keys:
         raise Exception("No Groq API keys configured")
 
-    for key in keys:
-        try:
-            client = Groq(api_key=key)
-            client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": "hi"}],
-                max_tokens=5
-            )
-            return client
-        except Exception:
-            continue
-
-    raise Exception("All Groq API keys have exceeded their daily quota")
+    _groq_client = Groq(api_key=keys[0])
+    return _groq_client
 
 
 def call_groq(messages: list[dict], max_tokens: int = 1000) -> str:
-    client = get_groq_client()
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=messages,
-        max_tokens=max_tokens
-    )
-    return response.choices[0].message.content
+    global _groq_client
+    keys = settings.groq_keys_list
 
-
+    for i, key in enumerate(keys):
+        try:
+            client = Groq(api_key=key)
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                max_tokens=max_tokens
+            )
+            _groq_client = client
+            return response.choices[0].message.content
+        except Exception as e:
+            if i == len(keys) - 1:
+                raise e
+            continue
+        
 # ── Flujo de reto SIMPLE ──────────────────────────────────────────────────────
 
 def evaluate_simple_response(

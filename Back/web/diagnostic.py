@@ -1,8 +1,9 @@
 # diagnostic.py
 # Propósito: Endpoints del test diagnóstico y generación de retos personalizados
 # Dependencias: fastapi, sqlmodel, service/ai, model/diagnostic, model/challenge
-# Fecha: 2026-03-20
+# Fecha: 2026-04-26
 
+import asyncio
 from fastapi import APIRouter, HTTPException
 from sqlmodel import Session, select
 from pydantic import BaseModel
@@ -14,6 +15,8 @@ from model.student_profile import StudentProfile
 from service import ai as ai_service
 
 router = APIRouter(tags=["Diagnostic"])
+
+LEVELS_ORDER = ["beginner", "intermediate", "advanced"]
 
 
 class StartDiagnosticRequest(BaseModel):
@@ -33,10 +36,12 @@ class SubmitDiagnosticRequest(BaseModel):
 
 @router.get("/questions/{module_name}")
 async def get_diagnostic_questions(module_name: str):
-    """Genera las preguntas de opción múltiple para el diagnóstico."""
+    """Genera preguntas y escenario del diagnóstico en paralelo."""
     try:
-        questions = await ai_service.generate_diagnostic_questions(module_name)
-        scenario = await ai_service.generate_diagnostic_scenario(module_name)
+        questions, scenario = await asyncio.gather(
+            ai_service.generate_diagnostic_questions(module_name),
+            ai_service.generate_diagnostic_scenario(module_name),
+        )
         return {"questions": questions["questions"], "scenario": scenario}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generando diagnóstico: {str(e)}")
@@ -46,7 +51,7 @@ async def get_diagnostic_questions(module_name: str):
 async def submit_diagnostic(req: SubmitDiagnosticRequest):
     """Evalúa el diagnóstico y genera retos personalizados."""
     try:
-        # 1. Evaluar con IA (fuera de la sesión DB)
+        # 1. Evaluar con IA
         evaluation = await ai_service.evaluate_diagnostic_response(
             module_name=req.module_name,
             multiple_choice_score=req.multiple_choice_score,
@@ -54,18 +59,17 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest):
             written_response=req.written_response,
         )
 
-        # 2. Generar retos para niveles anteriores (fuera de sesión DB)
-        levels_order = ["beginner", "intermediate", "advanced"]
-        assigned_index = levels_order.index(evaluation["level_result"])
-        lower_challenges_data = {}
+        # 2. Validar level_result — si IA devuelve algo inesperado, usar beginner
+        level_result = evaluation.get("level_result", "beginner")
+        if level_result not in LEVELS_ORDER:
+            level_result = "beginner"
+        evaluation["level_result"] = level_result
 
-        # 3. Guardar todo en BD
+        # 3. Obtener perfil del estudiante (sesión corta, sin IA)
         with Session(engine) as db:
-            # Obtener perfil del estudiante
             student_prof = db.exec(
                 select(StudentProfile).where(StudentProfile.user_id == req.user_id)
             ).first()
-
             student_profile_dict = None
             if student_prof:
                 student_profile_dict = {
@@ -75,108 +79,90 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest):
                     "self_assessed_level": student_prof.self_assessed_level,
                 }
 
-        # 4. Generar retos del nivel asignado con perfil
-        challenges_data = await ai_service.generate_personalized_challenges(
-            module_name=req.module_name,
-            level=evaluation["level_result"],
-            user_id=req.user_id,
-            diagnostic=evaluation,
-            count=5,
-            student_profile=student_profile_dict,
-        )
+        # 4. Generar retos para TODOS los niveles hasta el asignado EN PARALELO
+        assigned_index = LEVELS_ORDER.index(level_result)
+        all_levels = LEVELS_ORDER[:assigned_index + 1]
 
-        # 5. Generar retos para niveles anteriores con perfil
-        for lower_level in levels_order[:assigned_index]:
-            lower_challenges_data[lower_level] = await ai_service.generate_personalized_challenges(
+        all_results = await asyncio.gather(*[
+            ai_service.generate_personalized_challenges(
                 module_name=req.module_name,
-                level=lower_level,
+                level=level,
                 user_id=req.user_id,
                 diagnostic=evaluation,
                 count=5,
                 student_profile=student_profile_dict,
             )
+            for level in all_levels
+        ])
 
-        # 6. Guardar todo en BD
+        all_challenges_data = dict(zip(all_levels, all_results))
+
+        # 5. Guardar TODO en una sola transacción
         with Session(engine) as db:
-            # Limpiar retos personalizados anteriores
-            old_challenges = db.exec(
-                select(Challenge).where(
-                    Challenge.user_id == req.user_id,
-                    Challenge.module_id == req.module_id
-                )
-            ).all()
-            for c in old_challenges:
-                db.delete(c)
-            db.commit()
-
-            # Guardar diagnóstico
-            diagnostic = Diagnostic(
-                user_id=req.user_id,
-                module_id=req.module_id,
-                level_result=evaluation["level_result"],
-                multiple_choice_score=req.multiple_choice_score,
-                written_response=req.written_response,
-                written_feedback=evaluation["written_feedback"],
-                strengths=evaluation["strengths"],
-                weaknesses=evaluation["weaknesses"],
-            )
-            db.add(diagnostic)
-            db.commit()
-            db.refresh(diagnostic)
-
-            # Actualizar nivel del usuario
-            progress = db.exec(
-                select(Progress).where(
-                    Progress.user_id == req.user_id,
-                    Progress.module_id == req.module_id
-                )
-            ).first()
-            if progress:
-                progress.current_level = evaluation["level_result"]
-                db.add(progress)
-                db.commit()
-
-            # Guardar retos del nivel asignado
-            saved_challenges = []
-            for ch in challenges_data:
-                challenge = Challenge(
-                    module_id=req.module_id,
-                    user_id=req.user_id,
-                    level=evaluation["level_result"],
-                    type=ch["type"],
-                    agent_profile=ch["agent_profile"],
-                    context=ch["context"],
-                    opening_message=ch["opening_message"],
-                )
-                db.add(challenge)
-                db.commit()
-                db.refresh(challenge)
-                saved_challenges.append(challenge)
-
-            # Guardar retos de niveles anteriores
-            for lower_level, lower_chs in lower_challenges_data.items():
-                for ch in lower_chs:
-                    challenge = Challenge(
-                        module_id=req.module_id,
-                        user_id=req.user_id,
-                        level=lower_level,
-                        type=ch["type"],
-                        agent_profile=ch["agent_profile"],
-                        context=ch["context"],
-                        opening_message=ch["opening_message"],
+            try:
+                # Limpiar retos anteriores
+                old_challenges = db.exec(
+                    select(Challenge).where(
+                        Challenge.user_id == req.user_id,
+                        Challenge.module_id == req.module_id
                     )
-                    db.add(challenge)
-                    db.commit()
-                    db.refresh(challenge)
-                    saved_challenges.append(challenge)
+                ).all()
+                for c in old_challenges:
+                    db.delete(c)
+
+                # Guardar diagnóstico
+                diagnostic = Diagnostic(
+                    user_id=req.user_id,
+                    module_id=req.module_id,
+                    level_result=level_result,
+                    multiple_choice_score=req.multiple_choice_score,
+                    written_response=req.written_response,
+                    written_feedback=evaluation["written_feedback"],
+                    strengths=evaluation["strengths"],
+                    weaknesses=evaluation["weaknesses"],
+                )
+                db.add(diagnostic)
+
+                # Actualizar nivel del usuario
+                progress = db.exec(
+                    select(Progress).where(
+                        Progress.user_id == req.user_id,
+                        Progress.module_id == req.module_id
+                    )
+                ).first()
+                if progress:
+                    progress.current_level = level_result
+                    db.add(progress)
+
+                # Insertar todos los retos en batch
+                total_saved = 0
+                for level, challenges in all_challenges_data.items():
+                    for ch in challenges:
+                        db.add(Challenge(
+                            module_id=req.module_id,
+                            user_id=req.user_id,
+                            level=level,
+                            type=ch["type"],
+                            agent_profile=ch["agent_profile"],
+                            context=ch["context"],
+                            opening_message=ch["opening_message"],
+                        ))
+                        total_saved += 1
+
+                # Un solo commit para todo
+                db.commit()
+
+            except Exception as db_err:
+                db.rollback()
+                raise db_err
 
         return {
-            "level_result": evaluation["level_result"],
+            "level_result": level_result,
             "written_feedback": evaluation["written_feedback"],
             "strengths": evaluation["strengths"],
             "weaknesses": evaluation["weaknesses"],
-            "justification": evaluation["justification"],
-            "challenges_generated": len(saved_challenges),
+            "justification": evaluation.get("justification", ""),
+            "challenges_generated": total_saved,
         }
 
     except Exception as e:
@@ -215,34 +201,38 @@ async def get_user_diagnostic(user_id: int, module_id: int):
 async def reset_diagnostic(user_id: int, module_id: int):
     """Elimina el diagnóstico y retos personalizados para repetir el test."""
     with Session(engine) as db:
-        diagnostics = db.exec(
-            select(Diagnostic).where(
-                Diagnostic.user_id == user_id,
-                Diagnostic.module_id == module_id
-            )
-        ).all()
-        for d in diagnostics:
-            db.delete(d)
+        try:
+            diagnostics = db.exec(
+                select(Diagnostic).where(
+                    Diagnostic.user_id == user_id,
+                    Diagnostic.module_id == module_id
+                )
+            ).all()
+            for d in diagnostics:
+                db.delete(d)
 
-        challenges = db.exec(
-            select(Challenge).where(
-                Challenge.user_id == user_id,
-                Challenge.module_id == module_id
-            )
-        ).all()
-        for c in challenges:
-            db.delete(c)
+            challenges = db.exec(
+                select(Challenge).where(
+                    Challenge.user_id == user_id,
+                    Challenge.module_id == module_id
+                )
+            ).all()
+            for c in challenges:
+                db.delete(c)
 
-        progress = db.exec(
-            select(Progress).where(
-                Progress.user_id == user_id,
-                Progress.module_id == module_id
-            )
-        ).first()
-        if progress:
-            progress.current_level = "beginner"
-            db.add(progress)
+            progress = db.exec(
+                select(Progress).where(
+                    Progress.user_id == user_id,
+                    Progress.module_id == module_id
+                )
+            ).first()
+            if progress:
+                progress.current_level = "beginner"
+                db.add(progress)
 
-        db.commit()
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise e
 
     return {"message": "Diagnóstico reiniciado correctamente"}

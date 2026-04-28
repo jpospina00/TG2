@@ -1,17 +1,19 @@
 // EmpathyLab.js
 // Propósito: Reto del Laboratorio de Empatía — análisis + selección múltiple
 // Dependencias: react, react-router-dom, axios
-// Fecha: 2026-04-16
+// Fecha: 2026-04-28
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import axios from "axios";
 import "./EmpathyLab.css";
+import { useSlowRequest } from "../../hooks/useSlowRequest";
+import SlowRequestBanner from "../shared/SlowRequestBanner";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 function EmpathyLab() {
-  const { challengeId } = useParams();
+  const { challengeId } = useParams(); // eslint-disable-line no-unused-vars
   const { state } = useLocation();
   const navigate = useNavigate();
 
@@ -23,14 +25,15 @@ function EmpathyLab() {
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingOptions, setLoadingOptions] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [step, setStep] = useState("loading");
 
   const isMultiple = challenge?.type === "multiple_choice";
+  const { isSlow, start, stop } = useSlowRequest(2000);
 
   useEffect(() => {
     if (userId && challenge) initConversation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, challenge]);
 
   async function initConversation() {
@@ -43,15 +46,18 @@ function EmpathyLab() {
 
       if (isMultiple) {
         setStep("loading-options");
-        setLoadingOptions(true);
-        const optRes = await axios.get(`${API_URL}/ai/empathy/options/${challenge.id}`);
+        start();
+        const optRes = await axios.get(
+          `${API_URL}/ai/empathy/options/${challenge.id}`
+        );
+        stop();
         setOptions(optRes.data.options);
-        setLoadingOptions(false);
         setStep("multiple");
       } else {
         setStep("analysis");
       }
     } catch (err) {
+      stop();
       console.error("Error iniciando conversación:", err);
     }
   }
@@ -59,12 +65,14 @@ function EmpathyLab() {
   async function handleSubmitAnalysis() {
     if (!emotionText.trim() || !messageText.trim()) return;
     setLoading(true);
+    start();
     try {
       const res = await axios.post(`${API_URL}/ai/empathy/evaluate`, {
         conversation_id: conversationId,
         emotion_identification: emotionText,
         student_message: messageText,
       });
+      stop();
       navigate(`/empathy/feedback/${conversationId}`, {
         state: {
           scores: res.data.scores,
@@ -79,6 +87,7 @@ function EmpathyLab() {
         },
       });
     } catch (err) {
+      stop();
       console.error("Error evaluando:", err);
     } finally {
       setLoading(false);
@@ -88,6 +97,7 @@ function EmpathyLab() {
   async function handleSubmitMultiple() {
     if (!selectedOption) return;
     setLoading(true);
+    start();
     try {
       const res = await axios.post(`${API_URL}/ai/empathy/multiple-choice`, {
         conversation_id: conversationId,
@@ -95,6 +105,7 @@ function EmpathyLab() {
         is_correct: selectedOption.is_correct,
         options,
       });
+      stop();
       navigate(`/empathy/feedback/${conversationId}`, {
         state: {
           completed: res.data.completed,
@@ -108,6 +119,7 @@ function EmpathyLab() {
         },
       });
     } catch (err) {
+      stop();
       console.error("Error enviando selección:", err);
     } finally {
       setLoading(false);
@@ -115,15 +127,23 @@ function EmpathyLab() {
   }
 
   if (!challenge) {
-    return <div className="el-loading"><p>Cargando situación...</p></div>;
+    return (
+      <div className="el-loading">
+        <p>Cargando situación...</p>
+      </div>
+    );
   }
 
   return (
     <div className="el-wrap">
       <nav className="el-nav">
-        <button className="el-exit-btn" onClick={() => setShowExitModal(true)}>Salir</button>
+        <button className="el-exit-btn" onClick={() => setShowExitModal(true)}>
+          Salir
+        </button>
         <span className="el-nav-title">Laboratorio de empatía</span>
-        <span className="el-nav-badge">{isMultiple ? "Selección múltiple" : "Análisis"}</span>
+        <span className="el-nav-badge">
+          {isMultiple ? "Selección múltiple" : "Análisis"}
+        </span>
       </nav>
 
       <div className="el-content">
@@ -136,14 +156,16 @@ function EmpathyLab() {
           </div>
         </div>
 
-        {/* Selección múltiple */}
+        {/* Cargando opciones */}
         {step === "loading-options" && (
           <div className="el-generating">
             <div className="el-spinner" />
             <p>Generando opciones...</p>
+            {isSlow && <SlowRequestBanner message="Generando las opciones de respuesta..." />}
           </div>
         )}
 
+        {/* Selección múltiple */}
         {step === "multiple" && (
           <>
             <p className="el-prompt">¿Cuál es la respuesta más empática?</p>
@@ -153,8 +175,11 @@ function EmpathyLab() {
                   key={opt.id}
                   className={`el-option ${selectedOption?.id === opt.id ? "el-option-selected" : ""}`}
                   onClick={() => setSelectedOption(opt)}
+                  disabled={loading}
                 >
-                  <div className={`el-opt-letter ${selectedOption?.id === opt.id ? "el-opt-letter-sel" : ""}`}>
+                  <div
+                    className={`el-opt-letter ${selectedOption?.id === opt.id ? "el-opt-letter-sel" : ""}`}
+                  >
                     {opt.id}
                   </div>
                   <p className="el-opt-text">{opt.text}</p>
@@ -168,6 +193,9 @@ function EmpathyLab() {
             >
               {loading ? "Enviando..." : "Confirmar respuesta"}
             </button>
+            {loading && isSlow && (
+              <SlowRequestBanner message="Registrando tu respuesta..." />
+            )}
           </>
         )}
 
@@ -177,15 +205,22 @@ function EmpathyLab() {
             <div className="el-step">
               <div className="el-step-header">
                 <div className="el-step-num">1</div>
-                <p className="el-step-label">¿Qué emociones identificas en esta persona?</p>
+                <p className="el-step-label">
+                  ¿Qué emociones identificas en esta persona?
+                </p>
               </div>
-              <p className="el-step-hint">Describe qué siente y por qué crees que se siente así</p>
+              <p className="el-step-hint">
+                Describe qué siente y por qué crees que se siente así
+              </p>
               <textarea
                 className="el-textarea"
                 value={emotionText}
-                onChange={(e) => setEmotionText(e.target.value.slice(0, 300))}
+                onChange={(e) =>
+                  setEmotionText(e.target.value.slice(0, 300))
+                }
                 placeholder="Creo que está sintiendo..."
                 rows={3}
+                disabled={loading}
               />
               <p className="el-char-count">{emotionText.length} / 300</p>
             </div>
@@ -197,13 +232,18 @@ function EmpathyLab() {
                 <div className="el-step-num">2</div>
                 <p className="el-step-label">¿Qué le dirías?</p>
               </div>
-              <p className="el-step-hint">Escribe el mensaje que le enviarías a esta persona</p>
+              <p className="el-step-hint">
+                Escribe el mensaje que le enviarías a esta persona
+              </p>
               <textarea
                 className="el-textarea"
                 value={messageText}
-                onChange={(e) => setMessageText(e.target.value.slice(0, 400))}
+                onChange={(e) =>
+                  setMessageText(e.target.value.slice(0, 400))
+                }
                 placeholder="Escribe tu mensaje aquí..."
                 rows={4}
+                disabled={loading}
               />
               <p className="el-char-count">{messageText.length} / 400</p>
             </div>
@@ -211,10 +251,15 @@ function EmpathyLab() {
             <button
               className="el-submit-btn"
               onClick={handleSubmitAnalysis}
-              disabled={emotionText.length < 5 || messageText.length < 10 || loading}
+              disabled={
+                emotionText.length < 5 || messageText.length < 10 || loading
+              }
             >
               {loading ? "Analizando..." : "Enviar y analizar"}
             </button>
+            {loading && isSlow && (
+              <SlowRequestBanner message="La IA está analizando tu respuesta..." />
+            )}
           </>
         )}
       </div>
@@ -226,20 +271,41 @@ function EmpathyLab() {
             <div className="el-modal-handle" />
             <div className="el-modal-icon">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 5v6M10 13.5v1" stroke="#633806" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M10 2L2 17h16L10 2z" stroke="#633806" strokeWidth="1.2" strokeLinejoin="round"/>
+                <path
+                  d="M10 5v6M10 13.5v1"
+                  stroke="#633806"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M10 2L2 17h16L10 2z"
+                  stroke="#633806"
+                  strokeWidth="1.2"
+                  strokeLinejoin="round"
+                />
               </svg>
             </div>
             <h3 className="el-modal-title">¿Salir del análisis?</h3>
-            <p className="el-modal-desc">Si sales ahora perderás lo que escribiste. Tu progreso en el módulo se mantiene.</p>
+            <p className="el-modal-desc">
+              Si sales ahora perderás lo que escribiste. Tu progreso en el
+              módulo se mantiene.
+            </p>
             <div className="el-modal-situation">
               <p className="el-modal-situation-label">Situación en curso</p>
-              <p className="el-modal-situation-text">"{challenge.opening_message.slice(0, 60)}..."</p>
+              <p className="el-modal-situation-text">
+                "{challenge.opening_message.slice(0, 60)}..."
+              </p>
             </div>
-            <button className="el-modal-btn el-modal-btn-danger" onClick={() => navigate(`/empathy/${moduleId}`)}>
+            <button
+              className="el-modal-btn el-modal-btn-danger"
+              onClick={() => navigate(`/empathy/${moduleId}`)}
+            >
               Sí, salir
             </button>
-            <button className="el-modal-btn el-modal-btn-cancel" onClick={() => setShowExitModal(false)}>
+            <button
+              className="el-modal-btn el-modal-btn-cancel"
+              onClick={() => setShowExitModal(false)}
+            >
               Continuar análisis
             </button>
           </div>

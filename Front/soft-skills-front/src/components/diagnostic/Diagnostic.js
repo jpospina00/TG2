@@ -7,13 +7,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
+import { useSlowRequest } from "../../hooks/useSlowRequest";
+import SlowRequestBanner from "../shared/SlowRequestBanner";
 import {
   FiArrowLeft,
   FiArrowRight,
   FiCheckCircle,
   FiMessageCircle,
   FiUsers,
-  FiEdit3,
 } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Diagnostic.css";
@@ -43,6 +44,8 @@ function Diagnostic() {
   const [result, setResult] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [error, setError] = useState(null);
+
+  const { isSlow, start, stop } = useSlowRequest(2000);
 
   const moduleName = moduleId === "1" ? "empathy" : "networking";
   const moduleLabel =
@@ -101,6 +104,7 @@ function Diagnostic() {
     if (!writtenResponse.trim()) return;
     setStep(STEPS.SUBMITTING);
     setError(null);
+    start();
 
     try {
       const score = calculateScore();
@@ -112,9 +116,11 @@ function Diagnostic() {
         scenario,
         written_response: writtenResponse,
       });
+      stop();
       setResult(res.data);
       setStep(STEPS.RESULT);
     } catch (err) {
+      stop();
       console.error("Error enviando diagnóstico:", err);
       setError("No se pudo procesar el diagnóstico. Intenta de nuevo.");
       setStep(STEPS.WRITING);
@@ -406,16 +412,19 @@ function Diagnostic() {
 
   // SUBMITTING
   if (step === STEPS.SUBMITTING) {
-    return (
-      <div className="diag-loading">
-        <div className="diag-spinner" />
-        <p>Analizando tu diagnóstico...</p>
-        <p className="diag-loading-sub">
-          La IA está generando tus retos personalizados
-        </p>
-      </div>
-    );
-  }
+  return (
+    <div className="diag-loading">
+      <div className="diag-spinner" />
+      <p>Analizando tu diagnóstico...</p>
+      <p className="diag-loading-sub">
+        La IA está generando tus retos personalizados
+      </p>
+      {isSlow && (
+        <SlowRequestBanner message="Esto puede tardar hasta 30 segundos mientras la IA genera tus retos personalizados..." />
+      )}
+    </div>
+  );
+}
 
   // RESULT
   if (step === STEPS.RESULT && result) {

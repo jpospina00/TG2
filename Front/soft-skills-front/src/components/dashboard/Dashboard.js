@@ -25,7 +25,6 @@ function Dashboard() {
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth0();
   const navigate = useNavigate();
 
-  const [userData, setUserData] = useState(null);
   const [progress, setProgress] = useState([]);
   const [modules, setModules] = useState([]);
   const [historial, setHistorial] = useState([]);
@@ -51,111 +50,114 @@ function Dashboard() {
   }, [user, isAuthenticated, authLoading]);
 
   async function initDashboard() {
+  try {
+    let dbUser;
     try {
-      let dbUser;
-      try {
-        const res = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
-        dbUser = res.data;
-      } catch {
-        const res = await axios.post(`${API_URL}/users`, {
-          auth0_id: user.sub,
-          name: user.name,
-          email: user.email,
-        });
-        dbUser = res.data;
-      }
-      setUserData(dbUser);
-      const profileRes = await axios.get(
-        `${API_URL}/students/profile/user/${dbUser.id}`,
-      );
-      if (!profileRes.data.has_profile) {
-        navigate("/onboarding");
-        return;
-      }
-      const modsRes = await axios.get(`${API_URL}/modules`);
-      setModules(modsRes.data);
-
-      let userProgress = [];
-      try {
-        const progRes = await axios.get(
-          `${API_URL}/progress/user/${dbUser.id}`,
-        );
-        userProgress = progRes.data;
-      } catch {}
-
-      for (const mod of modsRes.data) {
-        const existing = userProgress.find((p) => p.module_id === mod.id);
-        if (!existing) {
-          try {
-            const newProg = await axios.post(`${API_URL}/progress`, {
-              user_id: dbUser.id,
-              module_id: mod.id,
-              current_level: "beginner",
-            });
-            userProgress.push(newProg.data);
-          } catch {}
-        }
-      }
-      setProgress(userProgress);
-
-      // Cargar historial completo
-      await loadHistorial(dbUser.id, modsRes.data);
-    } catch (err) {
-      console.error("Error iniciando dashboard:", err);
-      setError(
-        "No se pudo cargar tu información. Verifica que el servidor esté activo.",
-      );
-    } finally {
-      setLoading(false);
+      const res = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
+      dbUser = res.data;
+    } catch {
+      const res = await axios.post(`${API_URL}/users`, {
+        auth0_id: user.sub,
+        name: user.name,
+        email: user.email,
+      });
+      dbUser = res.data;
     }
+
+    // Peticiones en paralelo — perfil, módulos y progreso al mismo tiempo
+    const [profileRes, modsRes, progRes] = await Promise.all([
+      axios.get(`${API_URL}/students/profile/user/${dbUser.id}`),
+      axios.get(`${API_URL}/modules`),
+      axios.get(`${API_URL}/progress/user/${dbUser.id}`).catch(() => ({ data: [] })),
+    ]);
+
+    if (!profileRes.data.has_profile) {
+      navigate("/onboarding");
+      return;
+    }
+
+    setModules(modsRes.data);
+    let userProgress = progRes.data;
+
+    // Crear progreso faltante en paralelo
+    const missingProgress = modsRes.data.filter(
+      (mod) => !userProgress.find((p) => p.module_id === mod.id)
+    );
+
+    if (missingProgress.length > 0) {
+      const newProgressItems = await Promise.all(
+        missingProgress.map((mod) =>
+          axios.post(`${API_URL}/progress`, {
+            user_id: dbUser.id,
+            module_id: mod.id,
+            current_level: "beginner",
+          }).then((r) => r.data).catch(() => null)
+        )
+      );
+      userProgress = [...userProgress, ...newProgressItems.filter(Boolean)];
+    }
+
+    setProgress(userProgress);
+
+    // Cargar historial sin bloquear el render
+    loadHistorial(dbUser.id, modsRes.data);
+
+  } catch (err) {
+    console.error("Error iniciando dashboard:", err);
+    setError("No se pudo cargar tu información. Verifica que el servidor esté activo.");
+  } finally {
+    setLoading(false); // el dashboard ya es visible aunque el historial siga cargando
   }
+}
 
   async function loadHistorial(userId, mods) {
-    try {
-      const convRes = await axios.get(
-        `${API_URL}/conversations/user/${userId}`,
-      );
-      const conversations = convRes.data;
+  try {
+    const convRes = await axios.get(`${API_URL}/conversations/user/${userId}`);
+    const conversations = convRes.data;
 
-      const items = [];
-      for (const conv of conversations) {
+    if (conversations.length === 0) {
+      setHistorial([]);
+      return;
+    }
+
+    // Todas las peticiones de feedback, mensajes y reto en paralelo
+    const items = await Promise.all(
+      conversations.map(async (conv) => {
         try {
-          const [fbRes, msgRes] = await Promise.all([
+          const [fbRes, msgRes, challengeRes] = await Promise.all([
             axios.get(`${API_URL}/feedback/conversation/${conv.id}`),
             axios.get(`${API_URL}/messages/conversation/${conv.id}`),
+            axios.get(`${API_URL}/challenges/${conv.challenge_id}`),
           ]);
 
-          // Obtener info del reto
-          const challengeRes = await axios.get(
-            `${API_URL}/challenges/${conv.challenge_id}`,
-          );
-          const challenge = challengeRes.data;
+          const modulo = mods.find((m) => m.id === challengeRes.data.module_id);
 
-          // Encontrar el módulo
-          const modulo = mods.find((m) => m.id === challenge.module_id);
-
-          items.push({
+          return {
             conversation: conv,
             feedback: fbRes.data,
             messages: msgRes.data,
-            challenge,
+            challenge: challengeRes.data,
             modulo,
-          });
-        } catch {}
-      }
+          };
+        } catch {
+          return null;
+        }
+      })
+    );
 
-      // Ordenar de más reciente a más antiguo
-      items.sort(
+    const validItems = items
+      .filter(Boolean)
+      .sort(
         (a, b) =>
           new Date(b.conversation.started_at) -
-          new Date(a.conversation.started_at),
+          new Date(a.conversation.started_at)
       );
 
-      setHistorial(items);
-    } catch (err) {
-      console.error("Error cargando historial:", err);
-    }
+    setHistorial(validItems);
+  } catch (err) {
+    console.error("Error cargando historial:", err);
   }
+}
 
   function getLevelLabel(level) {
     const labels = {

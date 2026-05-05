@@ -8,6 +8,8 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import axios from "axios";
 import { FiArrowLeft, FiSend } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
+import { useSlowRequest } from "../../hooks/useSlowRequest";
+import SlowRequestBanner from "../shared/SlowRequestBanner";
 import "./Challenge.css";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -27,6 +29,7 @@ function SimpleChallenge() {
   const [evaluated, setEvaluated] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [error, setError] = useState(null);
+  const { isSlow, start, stop } = useSlowRequest(2000);
 
   const MAX_CHARS = 500;
 
@@ -70,6 +73,7 @@ function SimpleChallenge() {
     const studentResponse = response.trim();
     setResponse("");
     setIsEvaluating(true);
+    start();
     setError(null);
 
     setMessages((prev) => [...prev, { role: "user", content: studentResponse }]);
@@ -79,7 +83,7 @@ function SimpleChallenge() {
         conversation_id: conversationId,
         student_response: studentResponse,
       });
-
+      stop();
       // Si hubo level_up, obtener el nivel actualizado desde la API
       let newLevel = null;
       if (evalRes.data.level_up) {
@@ -87,7 +91,9 @@ function SimpleChallenge() {
           const progressRes = await axios.get(`${API_URL}/progress/user/${userId}`);
           const modProgress = progressRes.data.find((p) => p.module_id === moduleId);
           newLevel = modProgress?.current_level || null;
-        } catch {}
+        } catch {
+          stop();
+        }
       }
 
       navigate(`/feedback/${conversationId}`, {
@@ -185,18 +191,13 @@ function SimpleChallenge() {
         ))}
 
         {isEvaluating && (
-          <div className="ch-msg-wrap msg-agent">
-            <div
-              className="ch-msg-mini-avatar"
-              style={{ background: "linear-gradient(135deg, #2563EB, #0EA5E9)" }}
-            >
-              IA
-            </div>
-            <div className="bubble-agent ch-evaluating">
-              Evaluando tu respuesta...
-            </div>
-          </div>
-        )}
+  <div className="ch-msg-wrap msg-agent">
+    <div className="bubble-agent ch-evaluating">
+      Evaluando tu respuesta...
+    </div>
+    {isSlow && <SlowRequestBanner message="La IA está analizando tu respuesta..." />}
+  </div>
+)}
 
         {error && (
           <ErrorMessage

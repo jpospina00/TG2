@@ -3,12 +3,12 @@
 # Dependencias: fastapi, sqlmodel, service/ai
 # Fecha: 2026-03-20
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from datetime import datetime
 
-from database import get_session
+from database import get_session, engine
 from model.challenge import Challenge
 from model.conversation import Conversation
 from model.message import Message
@@ -68,7 +68,7 @@ class EmpathyMultipleChoice(BaseModel):
 
 
 @router.post("/simple/evaluate")
-async def evaluate_simple(payload: SimpleSubmit, db: Session = Depends(get_session)):
+async def evaluate_simple(payload: SimpleSubmit, background_tasks: BackgroundTasks, db: Session = Depends(get_session)):
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -114,10 +114,10 @@ async def evaluate_simple(payload: SimpleSubmit, db: Session = Depends(get_sessi
     db.commit()
     db.refresh(new_feedback)
 
-    level_up = await check_and_advance_level(conv.user_id, challenge.module_id, challenge.level, db)
-
+    level_up = await check_and_advance_level(
+        conv.user_id, challenge.module_id, challenge.level, db, background_tasks
+    )
     return {"feedback": feedback_text, "completed": completed, "level_up": level_up}
-
 
 @router.post("/conversational/turn")
 def conversational_turn(payload: ConversationalTurn, db: Session = Depends(get_session)):
@@ -163,7 +163,11 @@ def conversational_turn(payload: ConversationalTurn, db: Session = Depends(get_s
 
 
 @router.post("/conversational/close")
-async def close_conversational(payload: CloseConversation, db: Session = Depends(get_session)):
+async def close_conversational(
+    payload: CloseConversation,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_session)
+):
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -192,7 +196,9 @@ async def close_conversational(payload: CloseConversation, db: Session = Depends
     db.commit()
     db.refresh(new_feedback)
 
-    level_up = await check_and_advance_level(conv.user_id, challenge.module_id, challenge.level, db)
+    level_up = await check_and_advance_level(
+        conv.user_id, challenge.module_id, challenge.level, db, background_tasks
+    )
 
     return {"feedback": feedback_text, "completed": completed, "level_up": level_up}
 
@@ -265,7 +271,11 @@ async def get_empathy_options(challenge_id: int, db: Session = Depends(get_sessi
 
 
 @router.post("/empathy/evaluate")
-async def evaluate_empathy(payload: EmpathyLabSubmit, db: Session = Depends(get_session)):
+async def evaluate_empathy(
+    payload: EmpathyLabSubmit,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_session)
+):
     """Evalúa las dos respuestas del Laboratorio de Empatía."""
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
@@ -326,7 +336,7 @@ async def evaluate_empathy(payload: EmpathyLabSubmit, db: Session = Depends(get_
     db.commit()
 
     level_up = await check_and_advance_level(
-        conv.user_id, challenge.module_id, challenge.level, db
+        conv.user_id, challenge.module_id, challenge.level, db, background_tasks
     )
 
     return {
@@ -345,7 +355,9 @@ async def evaluate_empathy(payload: EmpathyLabSubmit, db: Session = Depends(get_
 
 @router.post("/empathy/multiple-choice")
 async def submit_empathy_multiple_choice(
-    payload: EmpathyMultipleChoice, db: Session = Depends(get_session)
+    payload: EmpathyMultipleChoice,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_session)
 ):
     """Registra el resultado de un reto de selección múltiple de empatía."""
     conv = db.get(Conversation, payload.conversation_id)
@@ -383,7 +395,7 @@ async def submit_empathy_multiple_choice(
     db.commit()
 
     level_up = await check_and_advance_level(
-        conv.user_id, challenge.module_id, challenge.level, db
+        conv.user_id, challenge.module_id, challenge.level, db, background_tasks
     )
 
     return {
@@ -392,8 +404,48 @@ async def submit_empathy_multiple_choice(
         "options": payload.options,
     }
 
+async def generate_level_up_challenges(
+    module_name: str,
+    module_id: int,
+    user_id: int,
+    new_level: str,
+    diagnostic: dict,
+    student_profile_dict: dict,
+):
+    """Genera retos del nuevo nivel en segundo plano."""
+    try:
+        from service.ai import generate_personalized_challenges
+        challenges_data = await generate_personalized_challenges(
+            module_name=module_name,
+            level=new_level,
+            user_id=user_id,
+            diagnostic=diagnostic,
+            count=5,
+            student_profile=student_profile_dict,
+        )
+        with Session(engine) as db:
+            for ch in challenges_data:
+                db.add(Challenge(
+                    module_id=module_id,
+                    user_id=user_id,
+                    level=new_level,
+                    type=ch["type"],
+                    agent_profile=ch["agent_profile"],
+                    context=ch["context"],
+                    opening_message=ch["opening_message"],
+                ))
+            db.commit()
+        print(f"[BG] Retos nivel {new_level} generados para user {user_id}")
+    except Exception as e:
+        print(f"[BG] Error generando retos nivel up: {e}")
 
-async def check_and_advance_level(user_id: int, module_id: int, current_level: str, db: Session) -> bool:
+async def check_and_advance_level(
+    user_id: int,
+    module_id: int,
+    current_level: str,
+    db: Session,
+    background_tasks: BackgroundTasks,
+) -> bool:
     if current_level == "advanced":
         return False
 
@@ -425,65 +477,49 @@ async def check_and_advance_level(user_id: int, module_id: int, current_level: s
             db.add(progress)
             db.commit()
 
-            try:
-                module = db.get(Module, module_id)
+            # Obtener datos necesarios para el background task
+            module = db.get(Module, module_id)
 
-                from model.diagnostic import Diagnostic
-                diagnostic_record = db.exec(
-                    select(Diagnostic).where(
-                        Diagnostic.user_id == user_id,
-                        Diagnostic.module_id == module_id
-                    ).order_by(Diagnostic.created_at.desc())
-                ).first()
+            from model.diagnostic import Diagnostic
+            diagnostic_record = db.exec(
+                select(Diagnostic).where(
+                    Diagnostic.user_id == user_id,
+                    Diagnostic.module_id == module_id
+                ).order_by(Diagnostic.created_at.desc())
+            ).first()
 
-                diagnostic = {}
-                if diagnostic_record:
-                    diagnostic = {
-                        "strengths": diagnostic_record.strengths,
-                        "weaknesses": diagnostic_record.weaknesses,
-                        "written_feedback": diagnostic_record.written_feedback,
-                    }
+            diagnostic = {}
+            if diagnostic_record:
+                diagnostic = {
+                    "strengths": diagnostic_record.strengths,
+                    "weaknesses": diagnostic_record.weaknesses,
+                    "written_feedback": diagnostic_record.written_feedback,
+                }
 
-                # Obtener perfil del estudiante
-                from model.student_profile import StudentProfile
-                student_prof = db.exec(
-                    select(StudentProfile).where(StudentProfile.user_id == user_id)
-                ).first()
+            from model.student_profile import StudentProfile
+            student_prof = db.exec(
+                select(StudentProfile).where(StudentProfile.user_id == user_id)
+            ).first()
 
-                student_profile_dict = None
-                if student_prof:
-                    student_profile_dict = {
-                        "has_profile": True,
-                        "semester": student_prof.semester,
-                        "specialization": student_prof.specialization,
-                        "self_assessed_level": student_prof.self_assessed_level,
-                    }
+            student_profile_dict = None
+            if student_prof:
+                student_profile_dict = {
+                    "has_profile": True,
+                    "semester": student_prof.semester,
+                    "specialization": student_prof.specialization,
+                    "self_assessed_level": student_prof.self_assessed_level,
+                }
 
-                from service.ai import generate_personalized_challenges
-                challenges_data = await generate_personalized_challenges(
-                    module_name=module.name,
-                    level=new_level,
-                    user_id=user_id,
-                    diagnostic=diagnostic,
-                    count=5,
-                    student_profile=student_profile_dict,
-                )
-
-                for ch in challenges_data:
-                    new_challenge = Challenge(
-                        module_id=module_id,
-                        user_id=user_id,
-                        level=new_level,
-                        type=ch["type"],
-                        agent_profile=ch["agent_profile"],
-                        context=ch["context"],
-                        opening_message=ch["opening_message"],
-                    )
-                    db.add(new_challenge)
-                db.commit()
-
-            except Exception as e:
-                print(f"Error generando retos para nuevo nivel: {e}")
+            # Generar retos en segundo plano — no bloquea la respuesta
+            background_tasks.add_task(
+                generate_level_up_challenges,
+                module.name,
+                module_id,
+                user_id,
+                new_level,
+                diagnostic,
+                student_profile_dict,
+            )
 
             return True
 

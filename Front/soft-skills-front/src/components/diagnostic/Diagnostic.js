@@ -3,7 +3,7 @@
 // Dependencias: react, react-router-dom, axios, react-icons
 // Fecha: 2026-03-20
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
@@ -44,6 +44,9 @@ function Diagnostic() {
   const [result, setResult] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [error, setError] = useState(null);
+  const [challengesReady, setChallengesReady] = useState(false);
+  const [questionsReady, setQuestionsReady] = useState(false);
+  const pollingRef = useRef(null);
 
   const { isSlow, start, stop } = useSlowRequest(2000);
 
@@ -59,34 +62,54 @@ function Diagnostic() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  function startPolling(uid, mid) {
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await axios.get(
+          `${API_URL}/diagnostic/challenges-ready/${uid}/${mid}`
+        );
+        if (res.data.ready) {
+          clearInterval(pollingRef.current);
+          setChallengesReady(true);
+        }
+      } catch {
+        // silencioso — seguir intentando
+      }
+    }, 3000);
+  }
+
+  // Limpiar polling si el componente se desmonta
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
+
   async function loadDiagnostic() {
     try {
       const userRes = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
       setUserId(userRes.data.id);
 
       const diagRes = await axios.get(
-        `${API_URL}/diagnostic/user/${userRes.data.id}/module/${moduleId}`,
+        `${API_URL}/diagnostic/user/${userRes.data.id}/module/${moduleId}`
       );
 
       if (diagRes.data.has_diagnostic) {
-        // Ya tiene diagnóstico — ir directo al módulo
-        if (moduleId === "1") {
-          navigate(`/empathy/${moduleId}`);
-        } else {
-          navigate(`/module/${moduleId}`);
-        }
+        navigate(moduleId === "1" ? `/empathy/${moduleId}` : `/module/${moduleId}`);
         return;
       }
 
-      // Cargar preguntas
+      // Mostrar intro inmediatamente sin esperar las preguntas
+      setStep(STEPS.INTRO);
+
+      // Cargar preguntas en background mientras el usuario lee la intro
       const qRes = await axios.get(
-        `${API_URL}/diagnostic/questions/${moduleName}`,
+        `${API_URL}/diagnostic/questions/${moduleName}`
       );
       setQuestions(qRes.data.questions);
       setScenario(qRes.data.scenario);
-      setStep(STEPS.INTRO);
+      setQuestionsReady(true);
     } catch (err) {
-      console.error("Error cargando diagnóstico:", err);
       setError("No se pudo cargar el diagnóstico. Verifica tu conexión.");
       setStep(STEPS.INTRO);
     }
@@ -100,6 +123,7 @@ function Diagnostic() {
     return questions.filter((q) => answers[q.id] === q.correct).length;
   }
 
+  // En handleSubmit — retorna rápido
   async function handleSubmit() {
     if (!writtenResponse.trim()) return;
     setStep(STEPS.SUBMITTING);
@@ -119,9 +143,10 @@ function Diagnostic() {
       stop();
       setResult(res.data);
       setStep(STEPS.RESULT);
+      // Iniciar polling para saber cuándo están los retos
+      startPolling(userId, parseInt(moduleId));
     } catch (err) {
       stop();
-      console.error("Error enviando diagnóstico:", err);
       setError("No se pudo procesar el diagnóstico. Intenta de nuevo.");
       setStep(STEPS.WRITING);
     }
@@ -230,8 +255,10 @@ function Diagnostic() {
             <button
               className="diag-start-btn"
               onClick={() => setStep(STEPS.QUESTIONS)}
+              disabled={!questionsReady}
+              style={{ opacity: questionsReady ? 1 : 0.6 }}
             >
-              Comenzar diagnóstico
+              {questionsReady ? "Comenzar diagnóstico" : "Preparando preguntas..."}
               <FiArrowRight size={16} />
             </button>
           </div>
@@ -412,21 +439,20 @@ function Diagnostic() {
 
   // SUBMITTING
   if (step === STEPS.SUBMITTING) {
-  return (
-    <div className="diag-loading">
-      <div className="diag-spinner" />
-      <p>Analizando tu diagnóstico...</p>
-      <p className="diag-loading-sub">
-        La IA está generando tus retos personalizados
-      </p>
-      {isSlow && (
-        <SlowRequestBanner message="Esto puede tardar hasta 30 segundos mientras la IA genera tus retos personalizados..." />
-      )}
-    </div>
-  );
-}
+    return (
+      <div className="diag-loading">
+        <div className="diag-spinner" />
+        <p>Analizando tu diagnóstico...</p>
+        <p className="diag-loading-sub">
+          La IA está generando tus retos personalizados
+        </p>
+        {isSlow && (
+          <SlowRequestBanner message="Esto puede tardar hasta 30 segundos mientras la IA genera tus retos personalizados..." />
+        )}
+      </div>
+    );
+  }
 
-  // RESULT
   if (step === STEPS.RESULT && result) {
     const levelColor = getLevelColor(result.level_result);
 
@@ -437,6 +463,13 @@ function Diagnostic() {
           <span className="diag-navbar-title">Resultado del diagnóstico</span>
           <div style={{ width: 60 }} />
         </nav>
+
+        {challengesReady && (
+          <div className="diag-toast">
+            <span className="diag-toast-icon">✓</span>
+            <span>¡Tus retos personalizados ya están listos!</span>
+          </div>
+        )}
 
         <div className="diag-content">
           <div className="diag-result-card">
@@ -457,15 +490,12 @@ function Diagnostic() {
             <p className="diag-result-module">Módulo de {moduleLabel}</p>
             <p className="diag-result-desc">
               Basándose en tu desempeño, la IA ha asignado este nivel de entrada
-              y generado {result.challenges_generated} retos personalizados para
-              ti.
+              y está generando tus retos personalizados.
             </p>
 
             <div className="diag-result-sections">
               <div className="diag-result-section section-ok">
-                <p className="diag-result-section-label">
-                  Fortalezas detectadas
-                </p>
+                <p className="diag-result-section-label">Fortalezas detectadas</p>
                 <p className="diag-result-section-text">{result.strengths}</p>
               </div>
               <div className="diag-result-section section-improve">
@@ -473,24 +503,29 @@ function Diagnostic() {
                 <p className="diag-result-section-text">{result.weaknesses}</p>
               </div>
               <div className="diag-result-section section-feedback">
-                <p className="diag-result-section-label">
-                  Retroalimentación general
-                </p>
-                <p className="diag-result-section-text">
-                  {result.written_feedback}
-                </p>
+                <p className="diag-result-section-label">Retroalimentación general</p>
+                <p className="diag-result-section-text">{result.written_feedback}</p>
               </div>
             </div>
 
+            {!challengesReady && (
+              <div className="diag-waiting-challenges">
+                <div className="diag-spinner-sm" />
+                <p>Generando tus retos personalizados en segundo plano...</p>
+              </div>
+            )}
+
             <button
               className="diag-start-btn"
+              disabled={!challengesReady}
+              style={{ opacity: challengesReady ? 1 : 0.4 }}
               onClick={() =>
                 moduleId === "1"
                   ? navigate(`/empathy/${moduleId}`)
                   : navigate(`/module/${moduleId}`)
               }
             >
-              Ver mis retos personalizados
+              {challengesReady ? "Ver mis retos personalizados" : "Preparando retos..."}
               <FiArrowRight size={16} />
             </button>
           </div>

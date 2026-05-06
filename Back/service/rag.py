@@ -5,6 +5,8 @@ before sending prompts to Groq.
 from pathlib import Path
 import chromadb
 from chromadb.utils import embedding_functions
+from functools import lru_cache
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent / "chromadb_data"
 CHROMA_DIR = str(BASE_DIR / "chroma_db")
@@ -130,7 +132,7 @@ def get_personalization_guide(module: str) -> str:
         n_results=1
     )
 
-
+@lru_cache(maxsize=64)
 def get_full_context(module: str, level: str, agent_profile: str) -> dict:
     """
     Retorna todo el contexto relevante para un reto.

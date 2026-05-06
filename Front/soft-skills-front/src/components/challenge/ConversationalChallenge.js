@@ -55,7 +55,7 @@ function ConversationalChallenge() {
       });
       setConversationId(convRes.data.id);
 
-      await axios.post(`${API_URL}/messages`, {
+      axios.post(`${API_URL}/messages`, {
         conversation_id: convRes.data.id,
         role: "agent",
         content: challenge.opening_message,
@@ -84,7 +84,7 @@ function ConversationalChallenge() {
     setHistory(updatedHistory);
     setMessages((prev) => [...prev, { role: "user", content: studentMessage }]);
 
-    await axios.post(`${API_URL}/messages`, {
+    axios.post(`${API_URL}/messages`, {
       conversation_id: conversationId,
       role: "user",
       content: studentMessage,
@@ -110,7 +110,7 @@ function ConversationalChallenge() {
       setHistory(newHistory);
       setMessages((prev) => [...prev, { role: "agent", content: agentReply }]);
 
-      await axios.post(`${API_URL}/messages`, {
+      axios.post(`${API_URL}/messages`, {
         conversation_id: conversationId,
         role: "agent",
         content: agentReply,

@@ -112,7 +112,7 @@ function Dashboard() {
 
   async function loadHistorial(userId, mods) {
   try {
-    const convRes = await axios.get(`${API_URL}/conversations/user/${userId}`);
+    const convRes = await axios.get(`${API_URL}/conversations/user/${userId}?limit=20`);
     const conversations = convRes.data;
 
     if (conversations.length === 0) {

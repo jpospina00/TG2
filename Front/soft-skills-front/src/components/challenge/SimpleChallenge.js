@@ -54,7 +54,7 @@ function SimpleChallenge() {
       });
       setConversationId(convRes.data.id);
 
-      await axios.post(`${API_URL}/messages`, {
+      axios.post(`${API_URL}/messages`, {
         conversation_id: convRes.data.id,
         role: "agent",
         content: challenge.opening_message,

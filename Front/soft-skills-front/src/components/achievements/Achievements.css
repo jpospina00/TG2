@@ -1,0 +1,307 @@
+/* Achievements.css */
+
+.ach-wrap {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* ── Navbar ── */
+.ach-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.ach-back-btn {
+  background: none;
+  border: none;
+  color: rgba(241, 245, 249, 0.6);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+.ach-back-btn:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ach-navbar-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ach-navbar-icon {
+  font-size: 18px;
+}
+
+.ach-navbar-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.ach-stats-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: background 0.15s;
+}
+.ach-stats-btn:hover {
+  background: rgba(37, 99, 235, 0.22);
+}
+
+/* ── Content ── */
+.ach-content {
+  padding: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Loading / Error ── */
+.ach-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 3rem 0;
+  color: rgba(241, 245, 249, 0.4);
+  font-size: 14px;
+}
+
+.ach-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(37, 99, 235, 0.25);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: ach-spin 0.8s linear infinite;
+}
+
+@keyframes ach-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ach-error {
+  text-align: center;
+  color: #EF4444;
+  font-size: 14px;
+  padding: 2rem 0;
+}
+
+/* ── Summary ── */
+.ach-summary {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.ach-summary-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.ach-summary-count {
+  font-size: 48px;
+  font-weight: 800;
+  color: #F59E0B;
+  line-height: 1;
+}
+
+.ach-summary-total {
+  font-size: 22px;
+  color: rgba(241, 245, 249, 0.35);
+  font-weight: 500;
+}
+
+.ach-summary-label {
+  font-size: 13px;
+  color: rgba(241, 245, 249, 0.45);
+  margin: 0 0 14px;
+}
+
+.ach-summary-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.ach-summary-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F59E0B, #EF4444);
+  border-radius: 4px;
+  transition: width 0.7s ease;
+}
+
+.ach-summary-streak {
+  font-size: 13px;
+  color: #F59E0B;
+  margin: 0;
+}
+
+/* ── Categories ── */
+.ach-category {
+  margin-bottom: 1.5rem;
+}
+
+.ach-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ach-category-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(241, 245, 249, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ach-category-count {
+  font-size: 12px;
+  color: rgba(241, 245, 249, 0.3);
+}
+
+.ach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Achievement Card ── */
+.ach-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+
+.ach-card-locked {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.ach-card-unlocked {
+  /* Color applied inline from color map */
+}
+
+.ach-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ach-icon-locked {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ach-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ach-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.ach-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ach-date {
+  font-size: 11px;
+  color: rgba(241, 245, 249, 0.3);
+}
+
+.ach-desc {
+  font-size: 12px;
+  color: rgba(241, 245, 249, 0.4);
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+/* Progress */
+.ach-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ach-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ach-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.ach-progress-text {
+  font-size: 11px;
+  color: rgba(241, 245, 249, 0.35);
+  white-space: nowrap;
+}
+
+.ach-progress-label {
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Unlocked badge */
+.ach-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}

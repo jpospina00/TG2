@@ -1,0 +1,361 @@
+/* Stats.css */
+
+.st-wrap {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* ── Navbar ── */
+.st-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-back-btn {
+  background: none;
+  border: none;
+  color: rgba(241, 245, 249, 0.6);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+.st-back-btn:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.st-navbar-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.st-navbar-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.st-logros-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: background 0.15s;
+}
+.st-logros-btn:hover {
+  background: rgba(37, 99, 235, 0.22);
+}
+
+/* ── Content ── */
+.st-content {
+  padding: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Filters ── */
+.st-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.st-filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(241, 245, 249, 0.5);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.st-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+.st-filter-active {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(37, 99, 235, 0.5);
+  color: #60a5fa;
+  font-weight: 500;
+}
+
+/* ── Loading / Error ── */
+.st-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 3rem 0;
+  color: rgba(241, 245, 249, 0.4);
+  font-size: 14px;
+}
+
+.st-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(37, 99, 235, 0.25);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: st-spin 0.8s linear infinite;
+}
+
+@keyframes st-spin {
+  to { transform: rotate(360deg); }
+}
+
+.st-error {
+  text-align: center;
+  color: #EF4444;
+  font-size: 14px;
+  padding: 2rem 0;
+}
+
+/* ── Stat Cards ── */
+.st-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+
+.st-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+
+.st-card-accent {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.st-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.st-card-body {
+  min-width: 0;
+}
+
+.st-card-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 2px;
+  line-height: 1.1;
+}
+
+.st-card-label {
+  font-size: 11px;
+  color: rgba(241, 245, 249, 0.45);
+  margin: 0 0 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.st-card-sub {
+  font-size: 11px;
+  color: rgba(241, 245, 249, 0.35);
+  margin: 0;
+}
+
+/* ── Sections ── */
+.st-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.st-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(241, 245, 249, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.st-section-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* ── Level Bars ── */
+.st-level-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.st-level-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.st-level-name {
+  font-size: 12px;
+  color: rgba(241, 245, 249, 0.55);
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.st-level-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.st-level-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.st-level-pct {
+  font-size: 12px;
+  color: rgba(241, 245, 249, 0.5);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Type Chips ── */
+.st-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.st-type-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-width: 90px;
+}
+
+.st-type-label {
+  font-size: 11px;
+  color: rgba(241, 245, 249, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.st-type-time {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0EA5E9;
+}
+
+/* ── Empathy Dimensions ── */
+.st-dims {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.st-dim-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.st-dim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.st-dim-label {
+  font-size: 13px;
+  color: rgba(241, 245, 249, 0.7);
+}
+
+.st-dim-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #10B981;
+}
+
+.st-dim-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.st-dim-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #0EA5E9);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ── Footer Card ── */
+.st-footer-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 4px;
+}
+
+.st-footer-text {
+  font-size: 13px;
+  color: rgba(241, 245, 249, 0.6);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.st-footer-text strong {
+  color: #F59E0B;
+}

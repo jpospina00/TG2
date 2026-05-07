@@ -25,6 +25,8 @@ import Onboarding from "./components/onboarding/Onboarding";
 import EmpathyModule from "./components/empathy/EmpathyModule";
 import EmpathyLab from "./components/empathy/EmpathyLab";
 import EmpathyFeedback from "./components/empathy/EmpathyFeedback";
+import Stats from "./components/stats/Stats";
+import Achievements from "./components/achievements/Achievements";
 
 const LoadingScreen = () => (
   <div
@@ -158,6 +160,23 @@ function App() {
           element={
             <PrivateRoute>
               <Onboarding />
+            </PrivateRoute>
+          }
+        />
+        {/* ── Nuevas rutas ── */}
+        <Route
+          path="/stats"
+          element={
+            <PrivateRoute>
+              <Stats />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/achievements"
+          element={
+            <PrivateRoute>
+              <Achievements />
             </PrivateRoute>
           }
         />

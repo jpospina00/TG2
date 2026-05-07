@@ -218,6 +218,47 @@
   color: #38bdf8;
 }
 
+/* Quick access */
+.db-quick-access {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.db-quick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.db-quick-btn-stats {
+  background: rgba(37, 99, 235, 0.1);
+  border: 0.5px solid rgba(37, 99, 235, 0.35);
+  color: #60a5fa;
+}
+.db-quick-btn-stats:hover {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(37, 99, 235, 0.55);
+}
+
+.db-quick-btn-achievements {
+  background: rgba(245, 158, 11, 0.08);
+  border: 0.5px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+.db-quick-btn-achievements:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
 .db-recent {
   display: flex;
   flex-direction: column;

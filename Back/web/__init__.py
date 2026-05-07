@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from web import user, module, challenge, progress, conversation, message, feedback, ai, diagnostic, student_profile
+from web import user, module, challenge, progress, conversation, message, feedback, ai, diagnostic, student_profile, stats
 
 api = APIRouter()
 
@@ -13,3 +13,4 @@ api.include_router(feedback.router, prefix="/feedback", tags=["Feedback"])
 api.include_router(ai.router, prefix="/ai", tags=["AI"])
 api.include_router(diagnostic.router, prefix="/diagnostic", tags=["Diagnostic"])
 api.include_router(student_profile.router, prefix="/students", tags=["Student Profile"])
+api.include_router(stats.router, prefix="", tags=["Stats"])

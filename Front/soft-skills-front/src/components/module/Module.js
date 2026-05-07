@@ -26,47 +26,87 @@ const LEVEL_LABELS = {
   advanced: "Avanzado",
 };
 
-const AVATAR_COLORS = [
-  "linear-gradient(135deg, #F59E0B, #EF4444)",
-  "linear-gradient(135deg, #EC4899, #8B5CF6)",
-  "linear-gradient(135deg, #2563EB, #0EA5E9)",
-  "linear-gradient(135deg, #10B981, #0EA5E9)",
-  "linear-gradient(135deg, #8B5CF6, #EC4899)",
+// ── Sistema de personas para los personajes de retos ──────────────────────────
+
+// Banco de nombres según género/rol detectado del agent_profile
+const NAMES_MALE = [
+  "Carlos Medina", "Andrés Torres", "Felipe Ruiz", "Sebastián Mora",
+  "Julián Castro", "Diego Herrera", "Mateo Vargas", "Camilo Ríos",
+  "Santiago López", "Nicolás Peña",
+];
+const NAMES_FEMALE = [
+  "Laura Gómez", "Valentina Cruz", "Daniela Reyes", "Isabela Muñoz",
+  "Mariana Ortiz", "Sofía Jiménez", "Natalia Soto", "Paula Ramírez",
+  "Alejandra Gil", "Catalina Vega",
+];
+const NAMES_NEUTRAL = [
+  "Alex Moreno", "Sam Guerrero", "Jordan Parra", "Morgan Salcedo",
+  "Riley Ospina", "Casey Mendoza",
 ];
 
-function getInitials(text) {
-  const words = text.trim().split(" ");
-  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
-  return text.slice(0, 2).toUpperCase();
+// Mapeo rol → etiqueta legible
+const ROLE_LABELS = {
+  reclutador: "Reclutador/a", reclutadora: "Reclutadora",
+  gerente: "Gerente", director: "Director/a", directora: "Directora",
+  profesor: "Profesor/a", profesora: "Profesora",
+  mentor: "Mentor/a", mentora: "Mentora",
+  inversor: "Inversor/a", inversora: "Inversora",
+  colega: "Colega", compañero: "Compañero/a", compañera: "Compañera",
+  cliente: "Cliente", jefe: "Jefe/a", estudiante: "Estudiante",
+  coordinador: "Coordinador/a", líder: "Líder de equipo",
+};
+
+// Hash simple y determinístico para un string
+function hashStr(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
 }
 
-function getShortName(agentProfile) {
-  const words = agentProfile.trim().split(" ");
-  
-  // Si empieza con nombre propio (mayúscula y corto) usarlo
-  if (words[0].length <= 10 && words[0][0] === words[0][0].toUpperCase()) {
-    return words[0];
+// Detecta si el perfil menciona género femenino
+function detectGender(profile) {
+  const lower = profile.toLowerCase();
+  const femaleKws = ["reclutadora", "profesora", "directora", "mentora",
+                     "inversora", "compañera", "coordinadora", "jefa",
+                     "gerenta", "lideresa", "amiga"];
+  const maleKws  = ["reclutador", "profesor", "director", "mentor",
+                    "inversor", "compañero", "coordinador", "jefe",
+                    "gerente", "líder", "amigo", "colega"];
+  if (femaleKws.some(k => lower.includes(k))) return "female";
+  if (maleKws.some(k => lower.includes(k))) return "male";
+  return "neutral";
+}
+
+// Detecta el rol principal del perfil para mostrarlo como subtítulo
+function detectRoleLabel(profile) {
+  const lower = profile.toLowerCase();
+  for (const [kw, label] of Object.entries(ROLE_LABELS)) {
+    if (lower.includes(kw)) return label;
   }
-  
-  // Buscar patrones como "Profesor X", "Reclutador X", "Compañero X"
-  const roles = ["Profesor", "Profesora", "Reclutador", "Reclutadora", 
-                 "Compañero", "Compañera", "Director", "Directora",
-                 "Gerente", "Inversor", "Inversora", "Mentor", "Mentora",
-                 "Gatekeeper", "Colega", "Estudiante", "Amigo", "Amiga"];
-  
-  for (const role of roles) {
-    if (agentProfile.includes(role)) {
-      const idx = agentProfile.indexOf(role);
-      const afterRole = agentProfile.slice(idx).split(" ");
-      if (afterRole.length >= 2 && afterRole[1].length > 2) {
-        return `${afterRole[0]} ${afterRole[1]}`;
-      }
-      return afterRole[0];
-    }
-  }
-  
-  // Fallback: primeras 2 palabras
-  return words.slice(0, 2).join(" ");
+  // Fallback: primeras 3 palabras del perfil
+  return profile.split(" ").slice(0, 3).join(" ");
+}
+
+// Devuelve { name, roleLabel, avatarUrl } determinístico para un agent_profile
+function resolvePersona(agentProfile) {
+  const h = hashStr(agentProfile);
+  const gender = detectGender(agentProfile);
+
+  let pool;
+  if (gender === "female") pool = NAMES_FEMALE;
+  else if (gender === "male") pool = NAMES_MALE;
+  else pool = NAMES_NEUTRAL;
+
+  const name = pool[h % pool.length];
+  const roleLabel = detectRoleLabel(agentProfile);
+
+  // DiceBear avataaars — seed determinístico, sin dependencia de paquete npm
+  const seed = encodeURIComponent(name);
+  const avatarUrl = `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&radius=50`;
+
+  return { name, roleLabel, avatarUrl };
 }
 
 function Module() {
@@ -128,24 +168,27 @@ function Module() {
 );
 const conversations = convRes.data;
 
+const feedbackResults = await Promise.all(
+  conversations.map(conv =>
+    axios.get(`${API_URL}/feedback/conversation/${conv.id}`).catch(() => null)
+  )
+);
+
 const completed = [];
 const failed = [];
 const convMap = {};
 
-for (const conv of conversations) {
-  try {
-    const fbRes = await axios.get(
-      `${API_URL}/feedback/conversation/${conv.id}`,
-    );
-    if (fbRes.data.completed) {
-      completed.push(conv.challenge_id);
-      // Guardar la conversacion mas reciente completada por reto
-      convMap[conv.challenge_id] = conv.id;
-    } else {
-      failed.push(conv.challenge_id);
-    }
-  } catch {}
-}
+feedbackResults.forEach((fbRes, i) => {
+  if (!fbRes) return;
+  const conv = conversations[i];
+  if (fbRes.data.completed) {
+    completed.push(conv.challenge_id);
+    convMap[conv.challenge_id] = conv.id;
+  } else {
+    failed.push(conv.challenge_id);
+  }
+});
+
 setCompletedIds(completed);
 setFailedIds(failed);
 setChallengeConvMap(convMap);
@@ -340,8 +383,8 @@ setChallengeConvMap(convMap);
         <div className="mod-characters-grid">
           {challenges.map((challenge, index) => {
             const status = getChallengeStatus(challenge.id);
-            const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
-            const initials = getInitials(challenge.agent_profile);
+            const persona = resolvePersona(challenge.agent_profile);
+            const firstName = persona.name.split(" ")[0];
 
             return (
               <div
@@ -352,62 +395,41 @@ setChallengeConvMap(convMap);
                 }
               >
                 <div className="mod-char-avatar-wrap">
+                  <img
+                    className="mod-char-avatar mod-char-avatar-img"
+                    src={persona.avatarUrl}
+                    alt={persona.name}
+                    onError={(e) => {
+                      // Fallback: círculo con inicial si DiceBear falla
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
                   <div
-                    className="mod-char-avatar"
-                    style={{ background: color }}
+                    className="mod-char-avatar mod-char-avatar-fallback"
+                    style={{ display: "none", background: "linear-gradient(135deg,#2563eb,#0ea5e9)" }}
                   >
-                    {initials}
+                    {persona.name[0]}
                   </div>
                   <div className={`mod-status-badge badge-${status}`}>
                     {status === "completed" && (
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 10 10"
-                        fill="none"
-                      >
-                        <path
-                          d="M2 5l2.5 2.5 3.5-4"
-                          stroke="white"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     {status === "failed" && (
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 10 10"
-                        fill="none"
-                      >
-                        <path
-                          d="M3 3l4 4M7 3l-4 4"
-                          stroke="white"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M3 3l4 4M7 3l-4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
                     )}
                     {status === "available" && (
-                      <div
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: "white",
-                        }}
-                      />
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "white" }} />
                     )}
                   </div>
                 </div>
-                <p className="mod-char-name">
-                  {getShortName(challenge.agent_profile)}
-                </p>
-                <span
-                  className={`mod-char-type ${challenge.type === "simple" ? "type-simple" : "type-conv"}`}
-                >
+                <p className="mod-char-name">{firstName}</p>
+                <p className="mod-char-role">{persona.roleLabel}</p>
+                <span className={`mod-char-type ${challenge.type === "simple" ? "type-simple" : "type-conv"}`}>
                   {challenge.type === "simple" ? "Simple" : "Conversacional"}
                 </span>
               </div>
@@ -417,7 +439,9 @@ setChallengeConvMap(convMap);
       </div>
 
       {/* Panel de detalle */}
-      {selectedChallenge && (
+      {selectedChallenge && (() => {
+        const persona = resolvePersona(selectedChallenge.agent_profile);
+        return (
         <div
           className="mod-detail-overlay"
           onClick={() => setSelectedChallenge(null)}
@@ -435,24 +459,21 @@ setChallengeConvMap(convMap);
             </button>
 
             <div className="mod-detail-top">
+              <img
+                className="mod-detail-avatar mod-detail-avatar-img"
+                src={persona.avatarUrl}
+                alt={persona.name}
+                onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+              />
               <div
-                className="mod-detail-avatar"
-                style={{
-                  background:
-                    AVATAR_COLORS[
-                      challenges.indexOf(selectedChallenge) %
-                        AVATAR_COLORS.length
-                    ],
-                }}
+                className="mod-detail-avatar mod-detail-avatar-fallback"
+                style={{ display: "none", background: "linear-gradient(135deg,#2563eb,#0ea5e9)" }}
               >
-                {getInitials(selectedChallenge.agent_profile)}
+                {persona.name[0]}
               </div>
               <div>
                 <p className="mod-detail-name">
-                  {selectedChallenge.agent_profile
-                    .split(" ")
-                    .slice(0, 3)
-                    .join(" ")}
+                  {persona.name}
                 </p>
                 <p className="mod-detail-role">
                   {selectedChallenge.agent_profile}
@@ -506,7 +527,8 @@ setChallengeConvMap(convMap);
             )}
           </div>
         </div>
-      )}
+        );
+      })()}
       {showResetModal && (
   <div className="modal-overlay" onClick={() => setShowResetModal(false)}>
     <div className="modal-card" onClick={(e) => e.stopPropagation()}>

@@ -471,7 +471,7 @@ def get_user_achievements(user_id: int, db: Session = Depends(get_session)):
             "unlocked_date": None,
             "progress": empathy_level_idx,
             "goal": 2,
-            "progress_label": f"Nivel {empathy_level} — {'¡completado!' if empathy_level == 'advanced' else f'falta {'1 nivel' if empathy_level == 'intermediate' else '2 niveles'}'}",
+            "progress_label": f"Nivel {empathy_level} — " + ("¡completado!" if empathy_level == "advanced" else ("falta 1 nivel" if empathy_level == "intermediate" else "falta 2 niveles")),
         },
         {
             "id": "networking_advanced",
@@ -484,7 +484,7 @@ def get_user_achievements(user_id: int, db: Session = Depends(get_session)):
             "unlocked_date": None,
             "progress": networking_level_idx,
             "goal": 2,
-            "progress_label": f"Nivel {networking_level} — {'¡completado!' if networking_level == 'advanced' else f'falta {'1 nivel' if networking_level == 'intermediate' else '2 niveles'}'}",
+            "progress_label": f"Nivel {networking_level} — " + ("¡completado!" if networking_level == "advanced" else ("falta 1 nivel" if networking_level == "intermediate" else "falta 2 niveles")),
         },
         # ── Excelencia ──
         {

@@ -6,6 +6,7 @@
 from groq import Groq
 from config import settings
 from service.rag import get_full_context
+from utils.prompt_guard import sanitize_user_input, sanitize_conversation_history
 import json
 
 # ── Prompts del sistema por módulo ────────────────────────────────────────────
@@ -120,6 +121,7 @@ def evaluate_simple_response(
     opening_message: str,
     student_response: str
 ) -> tuple[str, bool]:
+    student_response = sanitize_user_input(student_response, field_name="written_response")
     rag = get_full_context(module_name, level, agent_profile)
 
     # FIX 1: labels del RAG block en español
@@ -162,6 +164,7 @@ def generate_agent_reply(
     context: str,
     conversation_history: list[dict]
 ) -> str:
+    conversation_history = sanitize_conversation_history(conversation_history)
     rag = get_full_context(module_name, level, agent_profile)
 
     # FIX 1: label en español
@@ -189,6 +192,7 @@ def evaluate_conversation(
     context: str,
     conversation_history: list[dict]
 ) -> tuple[str, bool]:
+    conversation_history = sanitize_conversation_history(conversation_history)
     rag = get_full_context(module_name, level, agent_profile)
 
     # FIX 1: labels en español
@@ -423,6 +427,7 @@ async def evaluate_diagnostic_response(
     written_response: str,
 ) -> dict:
     """Evalúa la respuesta escrita del diagnóstico y determina el nivel."""
+    written_response = sanitize_user_input(written_response, field_name="written_response")
     client = get_groq_client()
 
     # FIX 2: argumentos corregidos — level="intermediate", agent_profile descriptivo

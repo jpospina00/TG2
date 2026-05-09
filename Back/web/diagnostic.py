@@ -44,7 +44,9 @@ async def get_diagnostic_questions(module_name: str):
         )
         return {"questions": questions["questions"], "scenario": scenario}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generando diagnóstico: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error generando las preguntas del diagnóstico. Por favor intentá de nuevo.")
 
 
 async def generate_and_save_challenges(
@@ -186,10 +188,16 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest, background_tasks: Back
             "challenges_ready": False,
         }
 
+    except HTTPException:
+        raise  # re-lanzar HTTPExceptions propias sin modificar
     except Exception as e:
         import traceback
+        # El traceback completo solo va al log del servidor, NUNCA al cliente
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error procesando diagnóstico: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error procesando el diagnóstico. Por favor intentá de nuevo."
+        )
 
 
 @router.get("/challenges-ready/{user_id}/{module_id}")

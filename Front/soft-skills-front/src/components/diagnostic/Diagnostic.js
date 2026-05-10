@@ -6,7 +6,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
+import { api } from "../../api";
+
 import { useSlowRequest } from "../../hooks/useSlowRequest";
 import SlowRequestBanner from "../shared/SlowRequestBanner";
 import {
@@ -19,7 +20,6 @@ import {
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Diagnostic.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 const STEPS = {
   LOADING: "loading",
@@ -65,8 +65,7 @@ function Diagnostic() {
   function startPolling(uid, mid) {
     pollingRef.current = setInterval(async () => {
       try {
-        const res = await axios.get(
-          `${API_URL}/diagnostic/challenges-ready/${uid}/${mid}`
+        const res = await api.get(`/diagnostic/challenges-ready/${uid}/${mid}`
         );
         if (res.data.ready) {
           clearInterval(pollingRef.current);
@@ -87,11 +86,10 @@ function Diagnostic() {
 
   async function loadDiagnostic() {
     try {
-      const userRes = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
+      const userRes = await api.get(`/users/auth0/${user.sub}`);
       setUserId(userRes.data.id);
 
-      const diagRes = await axios.get(
-        `${API_URL}/diagnostic/user/${userRes.data.id}/module/${moduleId}`
+      const diagRes = await api.get(`/diagnostic/user/${userRes.data.id}/module/${moduleId}`
       );
 
       if (diagRes.data.has_diagnostic) {
@@ -103,8 +101,7 @@ function Diagnostic() {
       setStep(STEPS.INTRO);
 
       // Cargar preguntas en background mientras el usuario lee la intro
-      const qRes = await axios.get(
-        `${API_URL}/diagnostic/questions/${moduleName}`
+      const qRes = await api.get(`/diagnostic/questions/${moduleName}`
       );
       setQuestions(qRes.data.questions);
       setScenario(qRes.data.scenario);
@@ -132,8 +129,7 @@ function Diagnostic() {
 
     try {
       const score = calculateScore();
-      const res = await axios.post(`${API_URL}/diagnostic/submit`, {
-        user_id: userId,
+      const res = await api.post(`/diagnostic/submit`, {
         module_id: parseInt(moduleId),
         module_name: moduleName,
         multiple_choice_score: score,

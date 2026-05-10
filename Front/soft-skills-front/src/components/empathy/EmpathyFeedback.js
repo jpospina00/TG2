@@ -5,10 +5,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import axios from "axios";
-import "./EmpathyFeedback.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
+import "./EmpathyFeedback.css";
+import { api } from "../../api";
+
 
 function EmpathyFeedback() {
   const { conversationId } = useParams();
@@ -28,7 +28,7 @@ function EmpathyFeedback() {
   useEffect(() => {
     if (readOnly && conversationId) {
       setLoading(true);
-      axios.get(`${API_URL}/feedback/conversation/${conversationId}`)
+      api.get(`/feedback/conversation/${conversationId}`)
         .then((res) => {
           setFeedbackData(res.data);
         })

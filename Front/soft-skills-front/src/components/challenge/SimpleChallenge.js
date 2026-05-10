@@ -5,14 +5,14 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import axios from "axios";
+
 import { FiArrowLeft, FiSend } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import { useSlowRequest } from "../../hooks/useSlowRequest";
 import SlowRequestBanner from "../shared/SlowRequestBanner";
 import "./Challenge.css";
+import { api } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 function SimpleChallenge() {
   const { challengeId } = useParams();
@@ -48,13 +48,11 @@ function SimpleChallenge() {
 
   async function initConversation() {
     try {
-      const convRes = await axios.post(`${API_URL}/conversations`, {
-        user_id: userId,
-        challenge_id: challenge.id,
+      const convRes = await api.post(`/conversations`, {        challenge_id: challenge.id,
       });
       setConversationId(convRes.data.id);
 
-      axios.post(`${API_URL}/messages`, {
+      api.post(`/messages`, {
         conversation_id: convRes.data.id,
         role: "agent",
         content: challenge.opening_message,
@@ -79,7 +77,7 @@ function SimpleChallenge() {
     setMessages((prev) => [...prev, { role: "user", content: studentResponse }]);
 
     try {
-      const evalRes = await axios.post(`${API_URL}/ai/simple/evaluate`, {
+      const evalRes = await api.post(`/ai/simple/evaluate`, {
         conversation_id: conversationId,
         student_response: studentResponse,
       });
@@ -88,7 +86,7 @@ function SimpleChallenge() {
       let newLevel = null;
       if (evalRes.data.level_up) {
         try {
-          const progressRes = await axios.get(`${API_URL}/progress/user/${userId}`);
+          const progressRes = await api.get(`/progress/user/${userId}`);
           const modProgress = progressRes.data.find((p) => p.module_id === moduleId);
           newLevel = modProgress?.current_level || null;
         } catch {

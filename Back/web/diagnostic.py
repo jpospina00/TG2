@@ -4,15 +4,18 @@
 # Fecha: 2026-04-26
 
 import asyncio
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Request
+from utils.rate_limit import limiter
 from sqlmodel import Session, select
 from pydantic import BaseModel
-from database import engine
+from database import engine, get_session
 from model.diagnostic import Diagnostic
 from model.challenge import Challenge
 from model.progress import Progress
 from model.student_profile import StudentProfile
+from model.user import User
 from service import ai as ai_service
+from utils.auth import get_db_user
 
 router = APIRouter(tags=["Diagnostic"])
 
@@ -20,13 +23,13 @@ LEVELS_ORDER = ["beginner", "intermediate", "advanced"]
 
 
 class StartDiagnosticRequest(BaseModel):
-    user_id: int
+    # user_id ya NO viene del cliente — se extrae del JWT con get_db_user
     module_id: int
     module_name: str
 
 
 class SubmitDiagnosticRequest(BaseModel):
-    user_id: int
+    # user_id ya NO viene del cliente — se extrae del JWT con get_db_user
     module_id: int
     module_name: str
     multiple_choice_score: int
@@ -64,7 +67,7 @@ async def generate_and_save_challenges(
             ai_service.generate_personalized_challenges(
                 module_name=req.module_name,
                 level=level,
-                user_id=req.user_id,
+                user_id=user_id,
                 diagnostic=evaluation,
                 count=5,
                 student_profile=student_profile_dict,
@@ -79,7 +82,7 @@ async def generate_and_save_challenges(
                 # Limpiar retos anteriores
                 old_challenges = db.exec(
                     select(Challenge).where(
-                        Challenge.user_id == req.user_id,
+                        Challenge.user_id == user_id,
                         Challenge.module_id == req.module_id
                     )
                 ).all()
@@ -91,7 +94,7 @@ async def generate_and_save_challenges(
                     for ch in challenges:
                         db.add(Challenge(
                             module_id=req.module_id,
-                            user_id=req.user_id,
+                            user_id=user_id,
                             level=level,
                             type=ch["type"],
                             agent_profile=ch["agent_profile"],
@@ -100,7 +103,7 @@ async def generate_and_save_challenges(
                         ))
 
                 db.commit()
-                print(f"[BG] Retos generados para user {req.user_id}, módulo {req.module_id}")
+                print(f"[BG] Retos generados para user {user_id}, módulo {req.module_id}")
 
             except Exception as db_err:
                 db.rollback()
@@ -111,7 +114,15 @@ async def generate_and_save_challenges(
 
 
 @router.post("/submit")
-async def submit_diagnostic(req: SubmitDiagnosticRequest, background_tasks: BackgroundTasks):
+@limiter.limit("10/minute")
+async def submit_diagnostic(
+    request: Request,
+    req: SubmitDiagnosticRequest,
+    background_tasks: BackgroundTasks,
+    db_user: User = Depends(get_db_user),
+):
+    # user_id verificado desde el token — no viene del body
+    user_id = db_user.id
     """Evalúa el diagnóstico y retorna resultado inmediatamente. Genera retos en segundo plano."""
     try:
         # 1. Evaluar con IA — única llamada bloqueante
@@ -131,7 +142,7 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest, background_tasks: Back
         # 3. Obtener perfil del estudiante
         with Session(engine) as db:
             student_prof = db.exec(
-                select(StudentProfile).where(StudentProfile.user_id == req.user_id)
+                select(StudentProfile).where(StudentProfile.user_id == user_id)
             ).first()
             student_profile_dict = None
             if student_prof:
@@ -146,7 +157,7 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest, background_tasks: Back
         with Session(engine) as db:
             try:
                 diagnostic = Diagnostic(
-                    user_id=req.user_id,
+                    user_id=user_id,
                     module_id=req.module_id,
                     level_result=level_result,
                     multiple_choice_score=req.multiple_choice_score,
@@ -159,7 +170,7 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest, background_tasks: Back
 
                 progress = db.exec(
                     select(Progress).where(
-                        Progress.user_id == req.user_id,
+                        Progress.user_id == user_id,
                         Progress.module_id == req.module_id
                     )
                 ).first()
@@ -201,8 +212,14 @@ async def submit_diagnostic(req: SubmitDiagnosticRequest, background_tasks: Back
 
 
 @router.get("/challenges-ready/{user_id}/{module_id}")
-async def check_challenges_ready(user_id: int, module_id: int):
+async def check_challenges_ready(
+    user_id: int,
+    module_id: int,
+    db_user: User = Depends(get_db_user),
+):
     """Polling — verifica si los retos personalizados ya están listos."""
+    if db_user.id != user_id:
+        raise HTTPException(status_code=403, detail="No autorizado.")
     with Session(engine) as db:
         count = db.exec(
             select(Challenge).where(
@@ -214,8 +231,14 @@ async def check_challenges_ready(user_id: int, module_id: int):
 
 
 @router.get("/user/{user_id}/module/{module_id}")
-async def get_user_diagnostic(user_id: int, module_id: int):
+async def get_user_diagnostic(
+    user_id: int,
+    module_id: int,
+    db_user: User = Depends(get_db_user),
+):
     """Obtiene el último diagnóstico de un usuario para un módulo."""
+    if db_user.id != user_id:
+        raise HTTPException(status_code=403, detail="No autorizado.")
     with Session(engine) as db:
         diagnostics = db.exec(
             select(Diagnostic).where(
@@ -240,8 +263,14 @@ async def get_user_diagnostic(user_id: int, module_id: int):
 
 
 @router.delete("/user/{user_id}/module/{module_id}/reset")
-async def reset_diagnostic(user_id: int, module_id: int):
+async def reset_diagnostic(
+    user_id: int,
+    module_id: int,
+    db_user: User = Depends(get_db_user),
+):
     """Elimina el diagnóstico y retos personalizados para repetir el test."""
+    if db_user.id != user_id:
+        raise HTTPException(status_code=403, detail="No autorizado.")
     with Session(engine) as db:
         try:
             diagnostics = db.exec(

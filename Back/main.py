@@ -8,6 +8,7 @@ from database import create_db_and_tables
 from utils.logger import logger_config
 from web import api as api_routes
 from error_handlers import register_exception_handlers
+from utils.rate_limit import register_rate_limiter
 
 logger = logger_config(__name__)
 
@@ -54,6 +55,8 @@ app.add_middleware(
 
 # Manejadores globales de excepciones — ningún error interno llega al cliente
 register_exception_handlers(app)
+# Rate limiting — protege endpoints costosos de abuso
+register_rate_limiter(app)
 
 app.include_router(api_routes)
 

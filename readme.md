@@ -101,8 +101,8 @@ npm start
 
 Crea `Front/soft-skills-front/.env`:
 ```
-REACT_APP_AUTH0_DOMAIN=dev-dc5eye6w4usbnja8.us.auth0.com
-REACT_APP_AUTH0_CLIENT_ID=qQnU7ml9b9EPhJ2J8Tc6dPHzyxQcn32t
+REACT_APP_AUTH0_DOMAIN=tu-tenant.us.auth0.com
+REACT_APP_AUTH0_CLIENT_ID=tu_client_id_aqui
 REACT_APP_API_URL=http://localhost:8000
 ```
 

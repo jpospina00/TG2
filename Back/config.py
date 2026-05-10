@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     DATABASE_URI: str = f"sqlite:///{db_path}"
     DATABASE_URL: str = ""
     GROQ_API_KEYS: str = ""
+    AUTH0_DOMAIN: str = "dev-dc5eye6w4usbnja8.us.auth0.com"
+    AUTH0_AUDIENCE: str = ""  # se setea en .env — ej: https://tesis-backend-b7ww.onrender.com
 
     @property
     def groq_keys_list(self) -> list[str]:

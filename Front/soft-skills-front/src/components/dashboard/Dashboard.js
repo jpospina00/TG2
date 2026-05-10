@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
+import { api } from "../../api";
 import {
   FiLogOut,
   FiMessageCircle,
@@ -15,13 +15,10 @@ import {
   FiXCircle,
   FiChevronDown,
   FiChevronUp,
-  FiTrendingUp,
-  FiAward,
 } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Dashboard.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 function Dashboard() {
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth0();
@@ -55,10 +52,10 @@ function Dashboard() {
   try {
     let dbUser;
     try {
-      const res = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
+      const res = await api.get(`/users/auth0/${user.sub}`);
       dbUser = res.data;
     } catch {
-      const res = await axios.post(`${API_URL}/users`, {
+      const res = await api.post(`/users`, {
         auth0_id: user.sub,
         name: user.name,
         email: user.email,
@@ -68,9 +65,9 @@ function Dashboard() {
 
     // Peticiones en paralelo — perfil, módulos y progreso al mismo tiempo
     const [profileRes, modsRes, progRes] = await Promise.all([
-      axios.get(`${API_URL}/students/profile/user/${dbUser.id}`),
-      axios.get(`${API_URL}/modules`),
-      axios.get(`${API_URL}/progress/user/${dbUser.id}`).catch(() => ({ data: [] })),
+      api.get(`/students/profile/user/${dbUser.id}`),
+      api.get(`/modules`),
+      api.get(`/progress/user/${dbUser.id}`).catch(() => ({ data: [] })),
     ]);
 
     if (!profileRes.data.has_profile) {
@@ -89,7 +86,7 @@ function Dashboard() {
     if (missingProgress.length > 0) {
       const newProgressItems = await Promise.all(
         missingProgress.map((mod) =>
-          axios.post(`${API_URL}/progress`, {
+          api.post(`/progress`, {
             user_id: dbUser.id,
             module_id: mod.id,
             current_level: "beginner",
@@ -114,7 +111,7 @@ function Dashboard() {
 
   async function loadHistorial(userId, mods) {
   try {
-    const convRes = await axios.get(`${API_URL}/conversations/user/${userId}?limit=20`);
+    const convRes = await api.get(`/conversations/user/${userId}?limit=20`);
     const conversations = convRes.data;
 
     if (conversations.length === 0) {
@@ -127,9 +124,9 @@ function Dashboard() {
       conversations.map(async (conv) => {
         try {
           const [fbRes, msgRes, challengeRes] = await Promise.all([
-            axios.get(`${API_URL}/feedback/conversation/${conv.id}`),
-            axios.get(`${API_URL}/messages/conversation/${conv.id}`),
-            axios.get(`${API_URL}/challenges/${conv.challenge_id}`),
+            api.get(`/feedback/conversation/${conv.id}`),
+            api.get(`/messages/conversation/${conv.id}`),
+            api.get(`/challenges/${conv.challenge_id}`),
           ]);
 
           const modulo = mods.find((m) => m.id === challengeRes.data.module_id);
@@ -278,24 +275,6 @@ function Dashboard() {
             </p>
             <p className="db-stat-label">Niveles superados</p>
           </div>
-        </div>
-
-        {/* Acceso rápido */}
-        <div className="db-quick-access">
-          <button
-            className="db-quick-btn db-quick-btn-stats"
-            onClick={() => navigate("/stats")}
-          >
-            <FiTrendingUp size={16} />
-            <span>Mis estadísticas</span>
-          </button>
-          <button
-            className="db-quick-btn db-quick-btn-achievements"
-            onClick={() => navigate("/achievements")}
-          >
-            <FiAward size={16} />
-            <span>Mis logros</span>
-          </button>
         </div>
 
         {/* Módulos */}

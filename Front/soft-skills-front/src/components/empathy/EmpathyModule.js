@@ -6,11 +6,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
+import { api } from "../../api";
+
 import { FiArrowLeft, FiRefreshCw, FiBookOpen, FiLock } from "react-icons/fi";
 import "./EmpathyModule.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
 const LEVELS = ["beginner", "intermediate", "advanced"];
 const LEVEL_LABELS = { beginner: "Inicial", intermediate: "Intermedio", advanced: "Avanzado" };
 
@@ -36,19 +36,18 @@ function EmpathyModule() {
 
   async function loadModule() {
     try {
-      const userRes = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
+      const userRes = await api.get(`/users/auth0/${user.sub}`);
       const dbUser = userRes.data;
       setUserId(dbUser.id);
 
-      const diagRes = await axios.get(
-        `${API_URL}/diagnostic/user/${dbUser.id}/module/${moduleId}`
+      const diagRes = await api.get(`/diagnostic/user/${dbUser.id}/module/${moduleId}`
       );
       if (!diagRes.data.has_diagnostic) {
         navigate(`/module/${moduleId}/diagnostic`);
         return;
       }
 
-      const progRes = await axios.get(`${API_URL}/progress/user/${dbUser.id}`);
+      const progRes = await api.get(`/progress/user/${dbUser.id}`);
       const modProgress = progRes.data.find(
         (p) => p.module_id === parseInt(moduleId)
       );
@@ -58,13 +57,13 @@ function EmpathyModule() {
 
       await loadChallenges(moduleId, level, dbUser.id);
 
-      const convRes = await axios.get(`${API_URL}/conversations/user/${dbUser.id}`);
+      const convRes = await api.get(`/conversations/user/${dbUser.id}`);
       const completed = [];
       const failed = [];
       const convMap = {};
       for (const conv of convRes.data) {
         try {
-          const fbRes = await axios.get(`${API_URL}/feedback/conversation/${conv.id}`);
+          const fbRes = await api.get(`/feedback/conversation/${conv.id}`);
           if (fbRes.data.completed) {
             completed.push(conv.challenge_id);
             convMap[conv.challenge_id] = conv.id;
@@ -85,8 +84,7 @@ function EmpathyModule() {
 
   async function loadChallenges(modId, level, uid) {
     try {
-      const res = await axios.get(
-        `${API_URL}/challenges/module/${modId}/level/${level}`,
+      const res = await api.get(`/challenges/module/${modId}/level/${level}`,
         { params: { user_id: uid } }
       );
       setChallenges(res.data);
@@ -104,8 +102,7 @@ function EmpathyModule() {
 
   async function handleResetDiagnostic() {
     try {
-      await axios.delete(
-        `${API_URL}/diagnostic/user/${userId}/module/${moduleId}/reset`
+      await api.delete(`/diagnostic/user/${userId}/module/${moduleId}/reset`
       );
       navigate(`/module/${moduleId}/diagnostic`);
     } catch (err) {

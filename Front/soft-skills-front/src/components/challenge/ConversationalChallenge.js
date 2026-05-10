@@ -5,12 +5,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import axios from "axios";
+
 import { FiArrowLeft, FiSend } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Challenge.css";
+import { api } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL;
 const MAX_TURNS = 3;
 const MAX_CHARS = 500;
 
@@ -49,13 +49,11 @@ function ConversationalChallenge() {
 
   async function initConversation() {
     try {
-      const convRes = await axios.post(`${API_URL}/conversations`, {
-        user_id: userId,
-        challenge_id: challenge.id,
+      const convRes = await api.post(`/conversations`, {        challenge_id: challenge.id,
       });
       setConversationId(convRes.data.id);
 
-      axios.post(`${API_URL}/messages`, {
+      api.post(`/messages`, {
         conversation_id: convRes.data.id,
         role: "agent",
         content: challenge.opening_message,
@@ -84,7 +82,7 @@ function ConversationalChallenge() {
     setHistory(updatedHistory);
     setMessages((prev) => [...prev, { role: "user", content: studentMessage }]);
 
-    axios.post(`${API_URL}/messages`, {
+    api.post(`/messages`, {
       conversation_id: conversationId,
       role: "user",
       content: studentMessage,
@@ -99,7 +97,7 @@ function ConversationalChallenge() {
 
     setIsAgentTyping(true);
     try {
-      const turnRes = await axios.post(`${API_URL}/ai/conversational/turn`, {
+      const turnRes = await api.post(`/ai/conversational/turn`, {
         conversation_id: conversationId,
         student_message: studentMessage,
         history: updatedHistory,
@@ -110,7 +108,7 @@ function ConversationalChallenge() {
       setHistory(newHistory);
       setMessages((prev) => [...prev, { role: "agent", content: agentReply }]);
 
-      axios.post(`${API_URL}/messages`, {
+      api.post(`/messages`, {
         conversation_id: conversationId,
         role: "agent",
         content: agentReply,
@@ -136,7 +134,7 @@ function ConversationalChallenge() {
     ]);
 
     try {
-      const closeRes = await axios.post(`${API_URL}/ai/conversational/close`, {
+      const closeRes = await api.post(`/ai/conversational/close`, {
         conversation_id: conversationId,
         history: currentHistory || history,
       });
@@ -144,7 +142,7 @@ function ConversationalChallenge() {
       let newLevel = null;
       if (closeRes.data.level_up) {
         try {
-          const progressRes = await axios.get(`${API_URL}/progress/user/${userId}`);
+          const progressRes = await api.get(`/progress/user/${userId}`);
           const modProgress = progressRes.data.find((p) => p.module_id === moduleId);
           newLevel = modProgress?.current_level || null;
         } catch {}

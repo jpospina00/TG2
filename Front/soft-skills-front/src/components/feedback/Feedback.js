@@ -6,10 +6,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { api } from "../../api";
 import "./Feedback.css";
-import axios from "axios";
-
-const API_URL = process.env.REACT_APP_API_URL;
 
 function Feedback() {
   // eslint-disable-next-line no-unused-vars
@@ -18,41 +16,41 @@ function Feedback() {
   const navigate = useNavigate();
 
   const [feedbackData, setFeedbackData] = useState(null);
-const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-const { feedback: feedbackFromState, completed: completedFromState, levelUp, newLevel, moduleName, challenge, moduleId, userId, readOnly } = state || {};
+  const {
+    feedback: feedbackFromState,
+    completed: completedFromState,
+    levelUp,
+    newLevel,
+    moduleName,
+    challenge,
+    moduleId,
+    userId,
+    readOnly,
+  } = state || {};
 
   useEffect(() => {
-  if (readOnly && conversationId) {
-    setLoading(true);
-    axios.get(`${API_URL}/feedback/conversation/${conversationId}`)
-      .then(res => {
-        setFeedbackData(res.data);
-      })
-      .catch(err => console.error("Error cargando feedback:", err))
-      .finally(() => setLoading(false));
+    if (readOnly && conversationId) {
+      setLoading(true);
+      api
+        .get(`/feedback/conversation/${conversationId}`)
+        .then((res) => setFeedbackData(res.data))
+        .catch((err) => console.error("Error cargando feedback:", err))
+        .finally(() => setLoading(false));
+    }
+  }, [readOnly, conversationId]);
+
+  const feedback = readOnly ? feedbackData?.content : feedbackFromState;
+  const completed = readOnly ? feedbackData?.completed : completedFromState;
+
+  if (loading || !feedback) {
+    return (
+      <div className="fb-loading">
+        <p>Cargando retroalimentación...</p>
+      </div>
+    );
   }
-}, [readOnly, conversationId]);
-const feedback = readOnly ? feedbackData?.content : feedbackFromState;
-const completed = readOnly ? feedbackData?.completed : completedFromState;
-
-  if (loading) {
-  return (
-    <div className="fb-loading">
-      <p>Cargando retroalimentación...</p>
-    </div>
-  );
-}
-
-if (!feedback) {
-  return (
-    <div className="fb-loading">
-      <p>Cargando retroalimentación...</p>
-    </div>
-  );
-}
-
-
 
   function parseCriteria() {
     const criteriaNames = [
@@ -65,7 +63,6 @@ if (!feedback) {
       { key: "formalidad", label: "Nivel de formalidad" },
       { key: "adecuación", label: "Adecuación al contexto" },
     ];
-
     return criteriaNames
       .filter((c) => feedback.toLowerCase().includes(c.key))
       .slice(0, 4)
@@ -76,21 +73,24 @@ if (!feedback) {
 
   function handleNext() {
     if (levelUp && newLevel) {
-      navigate("/levelup", {
-        state: { newLevel, moduleId, moduleName, userId },
-      });
+      navigate("/levelup", { state: { newLevel, moduleId, moduleName, userId } });
     } else {
-      moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`);
+      moduleId === "1"
+        ? navigate(`/empathy/${moduleId}`)
+        : navigate(`/module/${moduleId}`);
     }
   }
 
   return (
     <div className="fb-wrap">
-      {/* Navbar */}
       <nav className="fb-navbar">
         <button
           className="fb-back-btn"
-          onClick={() => moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`)}
+          onClick={() =>
+            moduleId === "1"
+              ? navigate(`/empathy/${moduleId}`)
+              : navigate(`/module/${moduleId}`)
+          }
         >
           Volver al módulo
         </button>
@@ -99,7 +99,6 @@ if (!feedback) {
       </nav>
 
       <div className="fb-content">
-        {/* Banner resultado */}
         <div className={`fb-result-banner ${completed ? "banner-ok" : "banner-fail"}`}>
           <div className={`fb-result-icon ${completed ? "icon-ok" : "icon-fail"}`}>
             {completed
@@ -120,7 +119,6 @@ if (!feedback) {
           )}
         </div>
 
-        {/* Info del reto */}
         <div className="fb-challenge-row">
           <div
             className="fb-challenge-avatar"
@@ -139,7 +137,6 @@ if (!feedback) {
           </span>
         </div>
 
-        {/* Criterios */}
         {criteria.length > 0 && (
           <>
             <p className="fb-section-title">Evaluación por criterios</p>
@@ -159,13 +156,11 @@ if (!feedback) {
           </>
         )}
 
-        {/* Feedback completo */}
         <p className="fb-section-title">Comentarios de la IA</p>
         <div className="fb-feedback-box">
           <p className="fb-feedback-text">{feedback}</p>
         </div>
 
-        {/* Acciones — solo se muestran si NO es modo readOnly */}
         {!readOnly && (
           <div className="fb-actions">
             {completed ? (
@@ -189,7 +184,11 @@ if (!feedback) {
             )}
             <button
               className="fb-btn-secondary"
-              onClick={() => moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`)}
+              onClick={() =>
+                moduleId === "1"
+                  ? navigate(`/empathy/${moduleId}`)
+                  : navigate(`/module/${moduleId}`)
+              }
             >
               Ver módulo
             </button>

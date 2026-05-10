@@ -1,6 +1,5 @@
 // App.js
-// Propósito: Enrutamiento principal de la aplicación con protección de rutas
-// Dependencias: react, react-router-dom, @auth0/auth0-react
+// Propósito: Enrutamiento principal con protección de rutas y token Auth0 global
 // Fecha: 2026-03-20
 
 import React from "react";
@@ -11,6 +10,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
+import AxiosInterceptor from "./AxiosInterceptor";
 import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
 import Module from "./components/module/Module";
@@ -53,136 +53,42 @@ function App() {
   const { isAuthenticated, isLoading } = useAuth0();
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            isLoading ? (
-              <LoadingScreen />
-            ) : isAuthenticated ? (
-              <Navigate to="/dashboard" />
-            ) : (
-              <Login />
-            )
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/module/:moduleId"
-          element={
-            <PrivateRoute>
-              <Module />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/challenge/simple/:challengeId"
-          element={
-            <PrivateRoute>
-              <SimpleChallenge />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/challenge/conversational/:challengeId"
-          element={
-            <PrivateRoute>
-              <ConversationalChallenge />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/feedback/:conversationId"
-          element={
-            <PrivateRoute>
-              <Feedback />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/module/:moduleId/guide"
-          element={
-            <PrivateRoute>
-              <Guide />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/module/:moduleId/diagnostic"
-          element={
-            <PrivateRoute>
-              <Diagnostic />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/empathy/:moduleId"
-          element={
-            <PrivateRoute>
-              <EmpathyModule />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/empathy/challenge/:challengeId"
-          element={
-            <PrivateRoute>
-              <EmpathyLab />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/empathy/feedback/:conversationId"
-          element={
-            <PrivateRoute>
-              <EmpathyFeedback />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/levelup"
-          element={
-            <PrivateRoute>
-              <LevelUp />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/onboarding"
-          element={
-            <PrivateRoute>
-              <Onboarding />
-            </PrivateRoute>
-          }
-        />
-        {/* ── Nuevas rutas ── */}
-        <Route
-          path="/stats"
-          element={
-            <PrivateRoute>
-              <Stats />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/achievements"
-          element={
-            <PrivateRoute>
-              <Achievements />
-            </PrivateRoute>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    // AxiosInterceptor se monta una sola vez aquí, dentro de Auth0Provider.
+    // Escucha isAuthenticated y registra el interceptor cuando Auth0 termina de cargar.
+    // Todos los componentes usan `api` de ./api.js y el token se adjunta automáticamente.
+    <AxiosInterceptor>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              isLoading ? (
+                <LoadingScreen />
+              ) : isAuthenticated ? (
+                <Navigate to="/dashboard" />
+              ) : (
+                <Login />
+              )
+            }
+          />
+          <Route path="/dashboard"          element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/module/:moduleId"   element={<PrivateRoute><Module /></PrivateRoute>} />
+          <Route path="/challenge/simple/:challengeId"        element={<PrivateRoute><SimpleChallenge /></PrivateRoute>} />
+          <Route path="/challenge/conversational/:challengeId" element={<PrivateRoute><ConversationalChallenge /></PrivateRoute>} />
+          <Route path="/feedback/:conversationId"             element={<PrivateRoute><Feedback /></PrivateRoute>} />
+          <Route path="/module/:moduleId/guide"               element={<PrivateRoute><Guide /></PrivateRoute>} />
+          <Route path="/module/:moduleId/diagnostic"          element={<PrivateRoute><Diagnostic /></PrivateRoute>} />
+          <Route path="/empathy/:moduleId"                    element={<PrivateRoute><EmpathyModule /></PrivateRoute>} />
+          <Route path="/empathy/challenge/:challengeId"       element={<PrivateRoute><EmpathyLab /></PrivateRoute>} />
+          <Route path="/empathy/feedback/:conversationId"     element={<PrivateRoute><EmpathyFeedback /></PrivateRoute>} />
+          <Route path="/levelup"                              element={<PrivateRoute><LevelUp /></PrivateRoute>} />
+          <Route path="/onboarding"                           element={<PrivateRoute><Onboarding /></PrivateRoute>} />
+          <Route path="/stats"                                element={<PrivateRoute><Stats /></PrivateRoute>} />
+          <Route path="/achievements"                         element={<PrivateRoute><Achievements /></PrivateRoute>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </AxiosInterceptor>
   );
 }
 

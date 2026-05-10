@@ -5,12 +5,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import axios from "axios";
+
 import "./EmpathyLab.css";
 import { useSlowRequest } from "../../hooks/useSlowRequest";
 import SlowRequestBanner from "../shared/SlowRequestBanner";
+import { api } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 function EmpathyLab() {
   const { challengeId } = useParams(); // eslint-disable-line no-unused-vars
@@ -38,17 +38,14 @@ function EmpathyLab() {
 
   async function initConversation() {
     try {
-      const res = await axios.post(`${API_URL}/conversations`, {
-        user_id: userId,
-        challenge_id: challenge.id,
+      const res = await api.post(`/conversations`, {        challenge_id: challenge.id,
       });
       setConversationId(res.data.id);
 
       if (isMultiple) {
         setStep("loading-options");
         start();
-        const optRes = await axios.get(
-          `${API_URL}/ai/empathy/options/${challenge.id}`
+        const optRes = await api.get(`/ai/empathy/options/${challenge.id}`
         );
         stop();
         setOptions(optRes.data.options);
@@ -67,7 +64,7 @@ function EmpathyLab() {
     setLoading(true);
     start();
     try {
-      const res = await axios.post(`${API_URL}/ai/empathy/evaluate`, {
+      const res = await api.post(`/ai/empathy/evaluate`, {
         conversation_id: conversationId,
         emotion_identification: emotionText,
         student_message: messageText,
@@ -99,7 +96,7 @@ function EmpathyLab() {
     setLoading(true);
     start();
     try {
-      const res = await axios.post(`${API_URL}/ai/empathy/multiple-choice`, {
+      const res = await api.post(`/ai/empathy/multiple-choice`, {
         conversation_id: conversationId,
         selected_option_id: selectedOption.id,
         is_correct: selectedOption.is_correct,

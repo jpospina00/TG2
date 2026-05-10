@@ -3,7 +3,8 @@
 # Dependencias: fastapi, sqlmodel, service/ai
 # Fecha: 2026-03-20
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
+from utils.rate_limit import limiter
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from datetime import datetime
@@ -68,7 +69,8 @@ class EmpathyMultipleChoice(BaseModel):
 
 
 @router.post("/simple/evaluate")
-async def evaluate_simple(payload: SimpleSubmit, background_tasks: BackgroundTasks, db: Session = Depends(get_session)):
+@limiter.limit("20/minute")
+async def evaluate_simple(request: Request, payload: SimpleSubmit, background_tasks: BackgroundTasks, db: Session = Depends(get_session)):
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -120,7 +122,8 @@ async def evaluate_simple(payload: SimpleSubmit, background_tasks: BackgroundTas
     return {"feedback": feedback_text, "completed": completed, "level_up": level_up}
 
 @router.post("/conversational/turn")
-def conversational_turn(payload: ConversationalTurn, db: Session = Depends(get_session)):
+@limiter.limit("30/minute")
+def conversational_turn(request: Request, payload: ConversationalTurn, db: Session = Depends(get_session)):
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -163,7 +166,9 @@ def conversational_turn(payload: ConversationalTurn, db: Session = Depends(get_s
 
 
 @router.post("/conversational/close")
+@limiter.limit("20/minute")
 async def close_conversational(
+    request: Request,
     payload: CloseConversation,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_session)
@@ -271,7 +276,9 @@ async def get_empathy_options(challenge_id: int, db: Session = Depends(get_sessi
 
 
 @router.post("/empathy/evaluate")
+@limiter.limit("20/minute")
 async def evaluate_empathy(
+    request: Request,
     payload: EmpathyLabSubmit,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_session)
@@ -354,7 +361,9 @@ async def evaluate_empathy(
 
 
 @router.post("/empathy/multiple-choice")
+@limiter.limit("20/minute")
 async def submit_empathy_multiple_choice(
+    request: Request,
     payload: EmpathyMultipleChoice,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_session)

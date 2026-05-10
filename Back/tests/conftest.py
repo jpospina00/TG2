@@ -12,6 +12,7 @@ from main import app
 from database import get_session
 from model import User, Module, Challenge, Progress, Conversation, Message, Feedback
 from model.diagnostic import Diagnostic
+from utils.auth import get_current_user, get_db_user
 
 
 # ── BD de prueba en memoria ───────────────────────────────────────────────────
@@ -37,12 +38,27 @@ def session_fixture(engine):
 
 
 @pytest.fixture(name="client")
-def client_fixture(session):
-    """Cliente HTTP con BD de prueba inyectada."""
+def client_fixture(session, test_user):
+    """
+    Cliente HTTP con BD de prueba inyectada y auth mockeada.
+    get_current_user devuelve un payload JWT falso con el auth0_id del test_user.
+    get_db_user devuelve el test_user directamente.
+    """
     def get_session_override():
         yield session
 
+    def get_current_user_override():
+        # Simula el payload decodificado de un JWT de Auth0
+        return {"sub": test_user.auth0_id, "email": test_user.email}
+
+    def get_db_user_override():
+        # Devuelve el usuario de prueba directamente sin validar token
+        return test_user
+
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_current_user] = get_current_user_override
+    app.dependency_overrides[get_db_user] = get_db_user_override
+
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()

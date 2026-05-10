@@ -31,7 +31,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql://tesis_user:tesis_pass@db:5432/tesis
       - GROQ_API_KEYS=${GROQ_API_KEYS}
     env_file:
       - ./Back/.env

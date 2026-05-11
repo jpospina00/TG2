@@ -41,6 +41,7 @@ app = FastAPI(
 # Nunca usar "*" en producción — permite que cualquier sitio haga requests a la API.
 ALLOWED_ORIGINS = [
     "https://soft-skills-front.vercel.app",  # frontend en producción
+    "https://tg-2-nu.vercel.app",          # frontend en staging
     "http://localhost:3000",                  # desarrollo local React
     "http://127.0.0.1:3000",
 ]

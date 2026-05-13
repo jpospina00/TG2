@@ -1,29 +1,37 @@
 # student_profile.py
-# Propósito: Router REST para el perfil del estudiante
+# Propósito: Router REST para el perfil del estudiante — user_id desde JWT
 # Dependencias: fastapi, sqlmodel
-# Fecha: 2026-03-29
+# Fecha: 2026-05-08
 
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from datetime import datetime
-from database import get_session          
+from database import get_session
 from model.student_profile import StudentProfile
+from model.user import User
+from utils.auth import get_db_user
 
 router = APIRouter(tags=["Student Profile"])
 
 
 class StudentProfileRequest(BaseModel):
-    user_id: int
+    # user_id ya NO viene del cliente — se extrae del JWT con get_db_user
     semester: str
     specialization: str
     self_assessed_level: str
 
 
 @router.post("/profile", status_code=status.HTTP_201_CREATED)
-def create_profile(req: StudentProfileRequest, db: Session = Depends(get_session)):
+def create_profile(
+    req: StudentProfileRequest,
+    db: Session = Depends(get_session),
+    db_user: User = Depends(get_db_user),
+):
+    user_id = db_user.id
+
     existing = db.exec(
-        select(StudentProfile).where(StudentProfile.user_id == req.user_id)
+        select(StudentProfile).where(StudentProfile.user_id == user_id)
     ).first()
 
     if existing:
@@ -37,7 +45,7 @@ def create_profile(req: StudentProfileRequest, db: Session = Depends(get_session
         return existing
 
     profile = StudentProfile(
-        user_id=req.user_id,
+        user_id=user_id,
         semester=req.semester,
         specialization=req.specialization,
         self_assessed_level=req.self_assessed_level,
@@ -49,7 +57,15 @@ def create_profile(req: StudentProfileRequest, db: Session = Depends(get_session
 
 
 @router.get("/profile/user/{user_id}")
-def get_profile(user_id: int, db: Session = Depends(get_session)):
+def get_profile(
+    user_id: int,
+    db: Session = Depends(get_session),
+    db_user: User = Depends(get_db_user),
+):
+    # Solo puede ver su propio perfil
+    if db_user.id != user_id:
+        raise HTTPException(status_code=403, detail="No autorizado.")
+
     profile = db.exec(
         select(StudentProfile).where(StudentProfile.user_id == user_id)
     ).first()

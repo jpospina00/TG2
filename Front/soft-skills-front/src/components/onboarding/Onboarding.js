@@ -5,8 +5,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../api";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
+
 import { FiArrowRight, FiArrowLeft, FiBarChart2,
   FiTarget,
   FiCpu,
@@ -22,7 +23,6 @@ import {
   LuCode,
   LuSmile
 } from "react-icons/lu";
-const API_URL = process.env.REACT_APP_API_URL;
 
 const SPECIALIZATIONS = [
   {
@@ -110,8 +110,8 @@ function Onboarding() {
 
   useEffect(() => {
     if (user) {
-      axios
-        .get(`${API_URL}/users/auth0/${user.sub}`)
+      api
+        .get(`/users/auth0/${user.sub}`)
         .then((res) => setUserId(res.data.id))
         .catch((err) => console.error(err));
     }
@@ -121,8 +121,7 @@ function Onboarding() {
     if (!semester || !specialization || !selfLevel || !userId) return;
     setSaving(true);
     try {
-      await axios.post(`${API_URL}/students/profile`, {
-        user_id: userId,
+      await api.post(`/students/profile`, {
         semester,
         specialization,
         self_assessed_level: selfLevel,

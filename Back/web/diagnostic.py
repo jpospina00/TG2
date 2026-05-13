@@ -56,6 +56,7 @@ async def generate_and_save_challenges(
     req: SubmitDiagnosticRequest,
     evaluation: dict,
     student_profile_dict: dict,
+    user_id: int,
 ):
     """Tarea en segundo plano — genera y guarda los retos personalizados."""
     try:
@@ -186,7 +187,7 @@ async def submit_diagnostic(
         # 5. Generar retos en segundo plano — no bloquea la respuesta
         background_tasks.add_task(
             generate_and_save_challenges,
-            req, evaluation, student_profile_dict
+            req, evaluation, student_profile_dict, user_id
         )
 
         # 6. Retornar inmediatamente

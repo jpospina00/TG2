@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import AxiosInterceptor from "./AxiosInterceptor";
+import { SessionExpiredProvider } from "./SessionExpiredModal";
 import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
 import Module from "./components/module/Module";
@@ -56,7 +57,8 @@ function App() {
     // AxiosInterceptor se monta una sola vez aquí, dentro de Auth0Provider.
     // Escucha isAuthenticated y registra el interceptor cuando Auth0 termina de cargar.
     // Todos los componentes usan `api` de ./api.js y el token se adjunta automáticamente.
-    <AxiosInterceptor>
+    <SessionExpiredProvider>
+      <AxiosInterceptor>
       <Router>
         <Routes>
           <Route
@@ -89,6 +91,7 @@ function App() {
         </Routes>
       </Router>
     </AxiosInterceptor>
+    </SessionExpiredProvider>
   );
 }
 

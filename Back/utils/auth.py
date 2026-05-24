@@ -21,7 +21,7 @@ AUTH0_DOMAIN   = settings.AUTH0_DOMAIN    # ej: dev-dc5eye6w4usbnja8.us.auth0.co
 AUTH0_AUDIENCE = settings.AUTH0_AUDIENCE  # ej: https://tesis-backend-b7ww.onrender.com
 ALGORITHMS     = ["RS256"]
 
-bearer_scheme = HTTPBearer()
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 # ── JWKS: claves públicas de Auth0 (cacheadas para no pedirlas en cada request) ─
@@ -57,6 +57,12 @@ def _get_rsa_key(token: str) -> dict | None:
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> dict:
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No autenticado.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     """
     Verifica el JWT de Auth0 y retorna el payload decodificado.
     Uso: añadir `current_user: dict = Depends(get_current_user)` a cualquier endpoint.

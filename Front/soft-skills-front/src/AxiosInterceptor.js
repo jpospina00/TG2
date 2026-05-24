@@ -1,30 +1,37 @@
 // AxiosInterceptor.js
-// Propósito: Componente que configura el token de Auth0 en axios UNA sola vez,
-//            cuando Auth0 termina de cargar. Se monta dentro de Auth0Provider en App.js.
+// Propósito: Configura el token de Auth0 en axios y dispara el modal de sesión
+//            expirada cuando el backend responde con 401 o 403 Not authenticated.
 // Fecha: 2026-05-08
 
 import { useEffect, useRef } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { api } from "./api";
+import { useSessionExpired } from "./SessionExpiredModal";
 
 const AUDIENCE = process.env.REACT_APP_AUTH0_AUDIENCE;
 
 export default function AxiosInterceptor({ children }) {
   const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0();
-  const interceptorRef = useRef(null);
+  const { trigger } = useSessionExpired();
+  const requestInterceptorRef  = useRef(null);
+  const responseInterceptorRef = useRef(null);
 
   useEffect(() => {
-    // Esperar a que Auth0 termine de inicializar
     if (isLoading) return;
 
-    // Limpiar interceptor anterior si existía
-    if (interceptorRef.current !== null) {
-      api.interceptors.request.eject(interceptorRef.current);
+    // Limpiar interceptores anteriores
+    if (requestInterceptorRef.current !== null) {
+      api.interceptors.request.eject(requestInterceptorRef.current);
+      requestInterceptorRef.current = null;
+    }
+    if (responseInterceptorRef.current !== null) {
+      api.interceptors.response.eject(responseInterceptorRef.current);
+      responseInterceptorRef.current = null;
     }
 
-    // Registrar interceptor solo si el usuario está autenticado
+    // Request — adjuntar token si está autenticado
     if (isAuthenticated) {
-      interceptorRef.current = api.interceptors.request.use(async (config) => {
+      requestInterceptorRef.current = api.interceptors.request.use(async (config) => {
         try {
           const tokenParams = AUDIENCE
             ? { authorizationParams: { audience: AUDIENCE } }
@@ -33,18 +40,41 @@ export default function AxiosInterceptor({ children }) {
           config.headers.Authorization = `Bearer ${token}`;
         } catch (err) {
           console.warn("No se pudo obtener token Auth0:", err?.error || err?.message);
+          // Si falla obtener el token, disparar modal directamente
+          trigger();
         }
         return config;
       });
     }
 
-    // Cleanup al desmontar
+    // Response — mostrar modal en 401 o 403 "Not authenticated"
+    responseInterceptorRef.current = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        const status = error.response?.status;
+        const detail = error.response?.data?.detail || "";
+
+        const isAuthError =
+          status === 401 ||
+          (status === 403 && detail.toLowerCase().includes("not authenticated"));
+
+        if (isAuthError) {
+          trigger();
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
     return () => {
-      if (interceptorRef.current !== null) {
-        api.interceptors.request.eject(interceptorRef.current);
+      if (requestInterceptorRef.current !== null) {
+        api.interceptors.request.eject(requestInterceptorRef.current);
+      }
+      if (responseInterceptorRef.current !== null) {
+        api.interceptors.response.eject(responseInterceptorRef.current);
       }
     };
-  }, [isAuthenticated, isLoading, getAccessTokenSilently]);
+  }, [isAuthenticated, isLoading, getAccessTokenSilently, trigger]);
 
   return children;
 }

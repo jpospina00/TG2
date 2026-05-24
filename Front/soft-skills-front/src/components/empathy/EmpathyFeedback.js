@@ -5,9 +5,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { api } from "../../api";
 
 import "./EmpathyFeedback.css";
-import { api } from "../../api";
 
 
 function EmpathyFeedback() {
@@ -17,7 +17,7 @@ function EmpathyFeedback() {
 
   const {
     scores, average, feedback: feedbackFromState,
-    completed: completedFromState, levelUp, challenge,
+    completed: completedFromState, levelUp, newLevel, challenge,
     moduleId, userId, readOnly, isMultiple, isAnalysis,
     options, selectedOptionId,
   } = state || {};
@@ -182,7 +182,7 @@ function EmpathyFeedback() {
               <button
                 className="ef-btn-primary"
                 onClick={() => navigate("/levelup", {
-                  state: { newLevel: "intermediate", moduleId, moduleName: "empathy", userId }
+                  state: { newLevel: newLevel || "intermediate", moduleId, moduleName: "empathy", userId }
                 })}
               >
                 Ver mi nuevo nivel

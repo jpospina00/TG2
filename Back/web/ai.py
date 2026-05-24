@@ -3,8 +3,7 @@
 # Dependencias: fastapi, sqlmodel, service/ai
 # Fecha: 2026-03-20
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
-from utils.rate_limit import limiter
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from datetime import datetime
@@ -69,8 +68,7 @@ class EmpathyMultipleChoice(BaseModel):
 
 
 @router.post("/simple/evaluate")
-@limiter.limit("20/minute")
-async def evaluate_simple(request: Request, payload: SimpleSubmit, background_tasks: BackgroundTasks, db: Session = Depends(get_session)):
+async def evaluate_simple(payload: SimpleSubmit, background_tasks: BackgroundTasks, db: Session = Depends(get_session)):
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -116,14 +114,13 @@ async def evaluate_simple(request: Request, payload: SimpleSubmit, background_ta
     db.commit()
     db.refresh(new_feedback)
 
-    level_up = await check_and_advance_level(
+    new_level = await check_and_advance_level(
         conv.user_id, challenge.module_id, challenge.level, db, background_tasks
     )
-    return {"feedback": feedback_text, "completed": completed, "level_up": level_up}
+    return {"feedback": feedback_text, "completed": completed, "level_up": new_level is not None, "new_level": new_level}
 
 @router.post("/conversational/turn")
-@limiter.limit("30/minute")
-def conversational_turn(request: Request, payload: ConversationalTurn, db: Session = Depends(get_session)):
+def conversational_turn(payload: ConversationalTurn, db: Session = Depends(get_session)):
     conv = db.get(Conversation, payload.conversation_id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -166,9 +163,7 @@ def conversational_turn(request: Request, payload: ConversationalTurn, db: Sessi
 
 
 @router.post("/conversational/close")
-@limiter.limit("20/minute")
 async def close_conversational(
-    request: Request,
     payload: CloseConversation,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_session)
@@ -201,11 +196,11 @@ async def close_conversational(
     db.commit()
     db.refresh(new_feedback)
 
-    level_up = await check_and_advance_level(
+    new_level = await check_and_advance_level(
         conv.user_id, challenge.module_id, challenge.level, db, background_tasks
     )
 
-    return {"feedback": feedback_text, "completed": completed, "level_up": level_up}
+    return {"feedback": feedback_text, "completed": completed, "level_up": new_level is not None, "new_level": new_level}
 
 
 @router.post("/challenges/next")
@@ -276,9 +271,7 @@ async def get_empathy_options(challenge_id: int, db: Session = Depends(get_sessi
 
 
 @router.post("/empathy/evaluate")
-@limiter.limit("20/minute")
 async def evaluate_empathy(
-    request: Request,
     payload: EmpathyLabSubmit,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_session)
@@ -342,7 +335,7 @@ async def evaluate_empathy(
     db.add(new_feedback)
     db.commit()
 
-    level_up = await check_and_advance_level(
+    new_level = await check_and_advance_level(
         conv.user_id, challenge.module_id, challenge.level, db, background_tasks
     )
 
@@ -356,14 +349,13 @@ async def evaluate_empathy(
         "average": result["average"],
         "feedback": result["feedback"],
         "completed": result["completed"],
-        "level_up": level_up,
+        "level_up": new_level is not None,
+        "new_level": new_level,
     }
 
 
 @router.post("/empathy/multiple-choice")
-@limiter.limit("20/minute")
 async def submit_empathy_multiple_choice(
-    request: Request,
     payload: EmpathyMultipleChoice,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_session)
@@ -403,13 +395,14 @@ async def submit_empathy_multiple_choice(
     db.add(new_feedback)
     db.commit()
 
-    level_up = await check_and_advance_level(
+    new_level = await check_and_advance_level(
         conv.user_id, challenge.module_id, challenge.level, db, background_tasks
     )
 
     return {
         "completed": payload.is_correct,
-        "level_up": level_up,
+        "level_up": new_level is not None,
+        "new_level": new_level,
         "options": payload.options,
     }
 
@@ -530,6 +523,6 @@ async def check_and_advance_level(
                 student_profile_dict,
             )
 
-            return True
+            return new_level
 
-    return False
+    return None

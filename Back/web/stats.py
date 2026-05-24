@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException
+from model.user import User
+from utils.auth import get_db_user
 from sqlmodel import Session, select
 
 from database import get_session
@@ -206,7 +208,12 @@ def _format_seconds(seconds: int) -> str:
 # ── Endpoint de estadísticas ───────────────────────────────────────────────────
 
 @router.get("/stats/user/{user_id}")
-def get_user_stats(user_id: int, module: str = "todos", db: Session = Depends(get_session)):
+def get_user_stats(
+    user_id: int,
+    module: str = "todos",
+    db: Session = Depends(get_session),
+    db_user: User = Depends(get_db_user),
+):
     """Retorna estadísticas completas del usuario, opcionalmente filtradas por módulo."""
 
     all_convs = _get_all_conversations(user_id, db, module)
@@ -272,7 +279,11 @@ def get_user_stats(user_id: int, module: str = "todos", db: Session = Depends(ge
 # ── Endpoint de logros ─────────────────────────────────────────────────────────
 
 @router.get("/achievements/user/{user_id}")
-def get_user_achievements(user_id: int, db: Session = Depends(get_session)):
+def get_user_achievements(
+    user_id: int,
+    db: Session = Depends(get_session),
+    db_user: User = Depends(get_db_user),
+):
     """Retorna los 15 logros del usuario con estado y progreso."""
 
     all_convs = _get_all_conversations(user_id, db)
@@ -471,7 +482,7 @@ def get_user_achievements(user_id: int, db: Session = Depends(get_session)):
             "unlocked_date": None,
             "progress": empathy_level_idx,
             "goal": 2,
-            "progress_label": f"Nivel {empathy_level} — " + ("¡completado!" if empathy_level == "advanced" else ("falta 1 nivel" if empathy_level == "intermediate" else "falta 2 niveles")),
+            "progress_label": f"Nivel {empathy_level} — {'¡completado!' if empathy_level == 'advanced' else f'falta {'1 nivel' if empathy_level == 'intermediate' else '2 niveles'}'}",
         },
         {
             "id": "networking_advanced",
@@ -484,7 +495,7 @@ def get_user_achievements(user_id: int, db: Session = Depends(get_session)):
             "unlocked_date": None,
             "progress": networking_level_idx,
             "goal": 2,
-            "progress_label": f"Nivel {networking_level} — " + ("¡completado!" if networking_level == "advanced" else ("falta 1 nivel" if networking_level == "intermediate" else "falta 2 niveles")),
+            "progress_label": f"Nivel {networking_level} — {'¡completado!' if networking_level == 'advanced' else f'falta {'1 nivel' if networking_level == 'intermediate' else '2 niveles'}'}",
         },
         # ── Excelencia ──
         {

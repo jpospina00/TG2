@@ -1,0 +1,71 @@
+/* SessionExpiredModal.css */
+
+.sem-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: sem-fade-in 0.2s ease;
+}
+
+@keyframes sem-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sem-card {
+  background: #1a2236;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 2rem 2.5rem;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  animation: sem-slide-up 0.25s ease;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes sem-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sem-icon {
+  font-size: 40px;
+  margin-bottom: 1rem;
+}
+
+.sem-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 0.75rem;
+}
+
+.sem-body {
+  font-size: 14px;
+  color: rgba(241, 245, 249, 0.55);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.sem-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sem-btn:hover {
+  background: #1d4ed8;
+}

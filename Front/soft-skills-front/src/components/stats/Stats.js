@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
+import { api } from "../../api";
 import {
   FiArrowLeft,
   FiAward,
@@ -18,7 +18,6 @@ import {
 } from "react-icons/fi";
 import "./Stats.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 const MODULE_OPTIONS = [
   { value: "todos", label: "Todos" },
@@ -89,7 +88,7 @@ function Stats() {
 
   async function fetchUser() {
     try {
-      const res = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
+      const res = await api.get(`/users/auth0/${user.sub}`);
       setDbUserId(res.data.id);
     } catch {
       setError("No se pudo obtener el perfil de usuario.");
@@ -101,8 +100,7 @@ function Stats() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
-        `${API_URL}/stats/user/${userId}?module=${module}`
+      const res = await api.get(`/stats/user/${userId}?module=${module}`
       );
       setStats(res.data);
     } catch {

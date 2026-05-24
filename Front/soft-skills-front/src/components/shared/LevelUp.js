@@ -93,7 +93,7 @@ function LevelUp() {
         <button
           className="levelup-btn"
           style={{ background: `linear-gradient(135deg, ${info.color}, ${isEmpathy ? "#2563EB" : "#2563EB"})` }}
-          onClick={() => moduleId === '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`)}
+          onClick={() => moduleId == '1' ? navigate(`/empathy/${moduleId}`) : navigate(`/module/${moduleId}`)}
         >
           Continuar al {info.label}
           <FiArrowRight size={16} />

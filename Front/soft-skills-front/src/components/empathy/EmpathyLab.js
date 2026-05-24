@@ -5,11 +5,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-
+import { api } from "../../api";
 import "./EmpathyLab.css";
 import { useSlowRequest } from "../../hooks/useSlowRequest";
 import SlowRequestBanner from "../shared/SlowRequestBanner";
-import { api } from "../../api";
 
 
 function EmpathyLab() {
@@ -77,6 +76,7 @@ function EmpathyLab() {
           feedback: res.data.feedback,
           completed: res.data.completed,
           levelUp: res.data.level_up,
+          newLevel: res.data.new_level,
           challenge,
           moduleId,
           userId,
@@ -107,6 +107,7 @@ function EmpathyLab() {
         state: {
           completed: res.data.completed,
           levelUp: res.data.level_up,
+          newLevel: res.data.new_level,
           options: res.data.options,
           selectedOptionId: selectedOption.id,
           challenge,

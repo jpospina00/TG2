@@ -6,11 +6,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
+import { api } from "../../api";
 import { FiArrowLeft, FiTrendingUp, FiLock } from "react-icons/fi";
 import "./Achievements.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 const CATEGORY_ORDER = [
   "Primeros pasos",
@@ -120,9 +119,9 @@ function Achievements() {
     setLoading(true);
     setError(null);
     try {
-      const userRes = await axios.get(`${API_URL}/users/auth0/${user.sub}`);
+      const userRes = await api.get(`/users/auth0/${user.sub}`);
       const userId = userRes.data.id;
-      const achRes = await axios.get(`${API_URL}/achievements/user/${userId}`);
+      const achRes = await api.get(`/achievements/user/${userId}`);
       setData(achRes.data);
     } catch {
       setError("No se pudieron cargar los logros.");

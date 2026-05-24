@@ -15,6 +15,8 @@ import {
   FiXCircle,
   FiChevronDown,
   FiChevronUp,
+  FiTrendingUp,
+  FiAward,
 } from "react-icons/fi";
 import ErrorMessage from "../shared/ErrorMessage";
 import "./Dashboard.css";
@@ -275,6 +277,24 @@ function Dashboard() {
             </p>
             <p className="db-stat-label">Niveles superados</p>
           </div>
+        </div>
+
+        {/* Acceso rápido */}
+        <div className="db-quick-access">
+          <button
+            className="db-quick-btn db-quick-btn-stats"
+            onClick={() => navigate("/stats")}
+          >
+            <FiTrendingUp size={16} />
+            <span>Mis estadísticas</span>
+          </button>
+          <button
+            className="db-quick-btn db-quick-btn-achievements"
+            onClick={() => navigate("/achievements")}
+          >
+            <FiAward size={16} />
+            <span>Mis logros</span>
+          </button>
         </div>
 
         {/* Módulos */}

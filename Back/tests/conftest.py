@@ -12,6 +12,7 @@ from main import app
 from database import get_session
 from model import User, Module, Challenge, Progress, Conversation, Message, Feedback
 from model.diagnostic import Diagnostic
+from model.student_profile import StudentProfile 
 from utils.auth import get_current_user, get_db_user
 
 
@@ -19,7 +20,11 @@ from utils.auth import get_current_user, get_db_user
 
 @pytest.fixture(name="engine")
 def engine_fixture():
-    """Crea una BD SQLite en memoria para cada test."""
+    from model import (
+        User, Module, Challenge, Progress,
+        Conversation, Message, Feedback,
+        Diagnostic, StudentProfile
+    )
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -28,7 +33,6 @@ def engine_fixture():
     SQLModel.metadata.create_all(engine)
     yield engine
     SQLModel.metadata.drop_all(engine)
-
 
 @pytest.fixture(name="session")
 def session_fixture(engine):

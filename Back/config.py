@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     GROQ_API_KEYS: str = ""
     AUTH0_DOMAIN: str = "dev-dc5eye6w4usbnja8.us.auth0.com"
     AUTH0_AUDIENCE: str = ""  # se setea en .env — ej: https://tesis-backend-b7ww.onrender.com
-
+    GEMINI_API_KEY: str = ""  # para LLM-as-a-Judge en tests — gratis en aistudio.google.com
+    OPENROUTER_API_KEY: str = ""  # para LLM-as-a-Judge en tests — gratis en openrouter.com
     @property
     def groq_keys_list(self) -> list[str]:
         return [k.strip() for k in self.GROQ_API_KEYS.split(",") if k.strip()]

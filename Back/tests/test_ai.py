@@ -6,13 +6,6 @@
 from unittest.mock import patch, MagicMock
 
 
-def make_groq_response(text):
-    """Helper para crear respuesta mock de Groq."""
-    mock_response = MagicMock()
-    mock_response.choices[0].message.content = text
-    return mock_response
-
-
 # ── Reto Simple ───────────────────────────────────────────────────────────────
 
 def test_evaluate_simple_approved(client, test_conversation, test_challenge, test_modules, test_user, test_progress):
@@ -23,10 +16,8 @@ def test_evaluate_simple_approved(client, test_conversation, test_challenge, tes
         "RESULTADO: APROBADO"
     )
 
-    with patch("service.ai.get_groq_client") as mock_client:
-        mock_instance = MagicMock()
-        mock_instance.chat.completions.create.return_value = make_groq_response(feedback_text)
-        mock_client.return_value = mock_instance
+    with patch("web.ai.evaluate_simple_response") as mock_evaluate:
+        mock_evaluate.return_value = (feedback_text, True)
 
         response = client.post("/ai/simple/evaluate", json={
             "conversation_id": test_conversation.id,
@@ -48,10 +39,8 @@ def test_evaluate_simple_not_approved(client, test_conversation, test_challenge,
         "RESULTADO: NO APROBADO"
     )
 
-    with patch("service.ai.get_groq_client") as mock_client:
-        mock_instance = MagicMock()
-        mock_instance.chat.completions.create.return_value = make_groq_response(feedback_text)
-        mock_client.return_value = mock_instance
+    with patch("web.ai.evaluate_simple_response") as mock_evaluate:
+        mock_evaluate.return_value = (feedback_text, False)
 
         response = client.post("/ai/simple/evaluate", json={
             "conversation_id": test_conversation.id,
@@ -77,29 +66,6 @@ def test_evaluate_simple_nonexistent_conversation(client):
 
 def test_conversational_turn(client, test_conversation, test_challenge, test_modules, test_user, test_progress):
     """Generar respuesta del agente en reto conversacional."""
-    agent_reply = "Gracias por escucharme. Me alegra que entiendas cómo me siento."
-
-    with patch("service.ai.get_groq_client") as mock_client:
-        mock_instance = MagicMock()
-        mock_instance.chat.completions.create.return_value = make_groq_response(agent_reply)
-        mock_client.return_value = mock_instance
-
-        response = client.post("/ai/conversational/turn", json={
-            "conversation_id": test_conversation.id,
-            "student_message": "Entiendo que te sientes ignorado, tiene todo el sentido.",
-            "history": [
-                {"role": "agent", "content": "Me siento ignorado en el grupo."},
-            ]
-        })
-
-    assert response.status_code == 200
-    data = response.json()
-    assert "agent_reply" in data
-    assert data["agent_reply"] == agent_reply
-    assert "turn_count" in data
-
-
-def test_conversational_turn(client, test_conversation, test_challenge, test_modules, test_user, test_progress):
     agent_reply = "Gracias por escucharme. Me alegra que entiendas cómo me siento."
 
     with patch("web.ai.generate_agent_reply") as mock_reply:

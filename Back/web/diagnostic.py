@@ -121,8 +121,8 @@ async def submit_diagnostic(
     req: SubmitDiagnosticRequest,
     background_tasks: BackgroundTasks,
     db_user: User = Depends(get_db_user),
+    db: Session = Depends(get_session),
 ):
-    # user_id verificado desde el token — no viene del body
     user_id = db_user.id
     """Evalúa el diagnóstico y retorna resultado inmediatamente. Genera retos en segundo plano."""
     try:
@@ -141,48 +141,46 @@ async def submit_diagnostic(
         evaluation["level_result"] = level_result
 
         # 3. Obtener perfil del estudiante
-        with Session(engine) as db:
-            student_prof = db.exec(
-                select(StudentProfile).where(StudentProfile.user_id == user_id)
-            ).first()
-            student_profile_dict = None
-            if student_prof:
-                student_profile_dict = {
-                    "has_profile": True,
-                    "semester": student_prof.semester,
-                    "specialization": student_prof.specialization,
-                    "self_assessed_level": student_prof.self_assessed_level,
-                }
+        student_prof = db.exec(
+            select(StudentProfile).where(StudentProfile.user_id == user_id)
+        ).first()
+        student_profile_dict = None
+        if student_prof:
+            student_profile_dict = {
+                "has_profile": True,
+                "semester": student_prof.semester,
+                "specialization": student_prof.specialization,
+                "self_assessed_level": student_prof.self_assessed_level,
+            }
 
         # 4. Guardar diagnóstico y actualizar nivel en BD — rápido
-        with Session(engine) as db:
-            try:
-                diagnostic = Diagnostic(
-                    user_id=user_id,
-                    module_id=req.module_id,
-                    level_result=level_result,
-                    multiple_choice_score=req.multiple_choice_score,
-                    written_response=req.written_response,
-                    written_feedback=evaluation["written_feedback"],
-                    strengths=evaluation["strengths"],
-                    weaknesses=evaluation["weaknesses"],
+        try:
+            diagnostic = Diagnostic(
+                user_id=user_id,
+                module_id=req.module_id,
+                level_result=level_result,
+                multiple_choice_score=req.multiple_choice_score,
+                written_response=req.written_response,
+                written_feedback=evaluation["written_feedback"],
+                strengths=evaluation["strengths"],
+                weaknesses=evaluation["weaknesses"],
+            )
+            db.add(diagnostic)
+
+            progress = db.exec(
+                select(Progress).where(
+                    Progress.user_id == user_id,
+                    Progress.module_id == req.module_id
                 )
-                db.add(diagnostic)
+            ).first()
+            if progress:
+                progress.current_level = level_result
+                db.add(progress)
 
-                progress = db.exec(
-                    select(Progress).where(
-                        Progress.user_id == user_id,
-                        Progress.module_id == req.module_id
-                    )
-                ).first()
-                if progress:
-                    progress.current_level = level_result
-                    db.add(progress)
-
-                db.commit()
-            except Exception as db_err:
-                db.rollback()
-                raise db_err
+            db.commit()
+        except Exception as db_err:
+            db.rollback()
+            raise db_err
 
         # 5. Generar retos en segundo plano — no bloquea la respuesta
         background_tasks.add_task(
@@ -201,10 +199,9 @@ async def submit_diagnostic(
         }
 
     except HTTPException:
-        raise  # re-lanzar HTTPExceptions propias sin modificar
+        raise
     except Exception as e:
         import traceback
-        # El traceback completo solo va al log del servidor, NUNCA al cliente
         traceback.print_exc()
         raise HTTPException(
             status_code=500,
@@ -217,18 +214,18 @@ async def check_challenges_ready(
     user_id: int,
     module_id: int,
     db_user: User = Depends(get_db_user),
+    db: Session = Depends(get_session),
 ):
-    """Polling — verifica si los retos personalizados ya están listos."""
     if db_user.id != user_id:
         raise HTTPException(status_code=403, detail="No autorizado.")
-    with Session(engine) as db:
-        count = db.exec(
-            select(Challenge).where(
-                Challenge.user_id == user_id,
-                Challenge.module_id == module_id
-            )
-        ).all()
-        return {"ready": len(count) > 0, "count": len(count)}
+    
+    count = db.exec(
+        select(Challenge).where(
+            Challenge.user_id == user_id,
+            Challenge.module_id == module_id
+        )
+    ).all()
+    return {"ready": len(count) > 0, "count": len(count)}
 
 
 @router.get("/user/{user_id}/module/{module_id}")
@@ -236,31 +233,31 @@ async def get_user_diagnostic(
     user_id: int,
     module_id: int,
     db_user: User = Depends(get_db_user),
+    db: Session = Depends(get_session),
 ):
-    """Obtiene el último diagnóstico de un usuario para un módulo."""
     if db_user.id != user_id:
         raise HTTPException(status_code=403, detail="No autorizado.")
-    with Session(engine) as db:
-        diagnostics = db.exec(
-            select(Diagnostic).where(
-                Diagnostic.user_id == user_id,
-                Diagnostic.module_id == module_id
-            ).order_by(Diagnostic.created_at.desc())
-        ).all()
+    
+    diagnostics = db.exec(
+        select(Diagnostic).where(
+            Diagnostic.user_id == user_id,
+            Diagnostic.module_id == module_id
+        ).order_by(Diagnostic.created_at.desc())
+    ).all()
 
-        if not diagnostics:
-            return {"has_diagnostic": False}
+    if not diagnostics:
+        return {"has_diagnostic": False}
 
-        latest = diagnostics[0]
-        return {
-            "has_diagnostic": True,
-            "level_result": latest.level_result,
-            "written_feedback": latest.written_feedback,
-            "strengths": latest.strengths,
-            "weaknesses": latest.weaknesses,
-            "created_at": latest.created_at,
-            "total_diagnostics": len(diagnostics),
-        }
+    latest = diagnostics[0]
+    return {
+        "has_diagnostic": True,
+        "level_result": latest.level_result,
+        "written_feedback": latest.written_feedback,
+        "strengths": latest.strengths,
+        "weaknesses": latest.weaknesses,
+        "created_at": latest.created_at,
+        "total_diagnostics": len(diagnostics),
+    }
 
 
 @router.delete("/user/{user_id}/module/{module_id}/reset")
@@ -268,43 +265,42 @@ async def reset_diagnostic(
     user_id: int,
     module_id: int,
     db_user: User = Depends(get_db_user),
+    db: Session = Depends(get_session),
 ):
-    """Elimina el diagnóstico y retos personalizados para repetir el test."""
     if db_user.id != user_id:
         raise HTTPException(status_code=403, detail="No autorizado.")
-    with Session(engine) as db:
-        try:
-            diagnostics = db.exec(
-                select(Diagnostic).where(
-                    Diagnostic.user_id == user_id,
-                    Diagnostic.module_id == module_id
-                )
-            ).all()
-            for d in diagnostics:
-                db.delete(d)
+    try:
+        diagnostics = db.exec(
+            select(Diagnostic).where(
+                Diagnostic.user_id == user_id,
+                Diagnostic.module_id == module_id
+            )
+        ).all()
+        for d in diagnostics:
+            db.delete(d)
 
-            challenges = db.exec(
-                select(Challenge).where(
-                    Challenge.user_id == user_id,
-                    Challenge.module_id == module_id
-                )
-            ).all()
-            for c in challenges:
-                db.delete(c)
+        challenges = db.exec(
+            select(Challenge).where(
+                Challenge.user_id == user_id,
+                Challenge.module_id == module_id
+            )
+        ).all()
+        for c in challenges:
+            db.delete(c)
 
-            progress = db.exec(
-                select(Progress).where(
-                    Progress.user_id == user_id,
-                    Progress.module_id == module_id
-                )
-            ).first()
-            if progress:
-                progress.current_level = "beginner"
-                db.add(progress)
+        progress = db.exec(
+            select(Progress).where(
+                Progress.user_id == user_id,
+                Progress.module_id == module_id
+            )
+        ).first()
+        if progress:
+            progress.current_level = "beginner"
+            db.add(progress)
 
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            raise e
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
 
     return {"message": "Diagnóstico reiniciado correctamente"}

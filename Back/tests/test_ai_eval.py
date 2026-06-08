@@ -243,7 +243,7 @@ Responde SOLO con un JSON con esta estructura exacta, sin texto adicional:
 # ═══════════════════════════════════════════════════════════════════════════════
 # JSON MATCH TESTS (usan llama-3.3-70b-versatile)
 # ═══════════════════════════════════════════════════════════════════════════════
-
+@pytest.mark.llm
 class TestJsonMatch:
     """
     Verifica que los outputs de la IA tengan la estructura JSON correcta.
@@ -400,7 +400,7 @@ class TestJsonMatch:
 # ═══════════════════════════════════════════════════════════════════════════════
 # LLM-AS-A-JUDGE TESTS (usan deepseek-r1-distill-llama-70b - MÁS AVANZADO)
 # ═══════════════════════════════════════════════════════════════════════════════
-
+@pytest.mark.llm
 class TestLLMJudge:
     """
     Usa el modelo MÁS AVANZADO de Groq (DeepSeek R1 70B) como juez.

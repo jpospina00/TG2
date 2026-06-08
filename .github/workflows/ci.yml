@@ -46,7 +46,7 @@ jobs:
           GROQ_API_KEYS: test_key
           DATABASE_URL: sqlite:///./db/test.db
         run: |
-          pytest tests/ -v --tb=short
+          pytest tests/ -v --tb=short -m "not llm"
 
   frontend:
     name: Frontend — build
